@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("HardwareAndSoftwareInventoryService")]
+[assembly: AssemblyTitle("Constants")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Hewlett-Packard")]
-[assembly: AssemblyProduct("HardwareAndSoftwareInventoryService")]
+[assembly: AssemblyProduct("Constants")]
 [assembly: AssemblyCopyright("Copyright © Hewlett-Packard 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 
-[assembly: Guid("2bbd004a-157c-49bd-afac-981723a40c81")]
+[assembly: Guid("3fd3d26a-f16e-45ff-a384-5fa4074a581c")]
 
 // Version information for an assembly consists of the following four values:
 //
