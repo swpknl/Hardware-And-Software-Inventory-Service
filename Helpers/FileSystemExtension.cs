@@ -16,11 +16,9 @@
         /// <param name="fileSystemInfo">
         /// The file system info.
         /// </param>
-        /// <param name="fileName">
-        /// The file name.
-        /// </param>
         public static void PopulateMetaData(this FileSystemInformation fileSystemInfo)
         {
+            // TODO: Generate unique hash as well as clean the copyright, tm etc symbols
             using (var shellObject = ShellObject.FromParsingName(fileSystemInfo.FilePath))
             {
                 var description = shellObject.Properties.GetProperty(SystemProperties.System.FileDescription).ValueAsObject;
