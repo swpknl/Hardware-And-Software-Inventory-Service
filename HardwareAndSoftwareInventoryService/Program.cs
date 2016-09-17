@@ -13,6 +13,9 @@
     using Logger.Contracts;
     using Logger.Impl;
 
+    using PopulateWMIInfo.Contracts;
+    using PopulateWMIInfo.Impl;
+
     /// <summary>
     /// The main program.
     /// </summary>
@@ -21,20 +24,19 @@
         /// <summary>
         /// Gets or sets the container.
         /// </summary>
-        public static IContainer Container { get; set; }
+        private static IContainer Container { get; set; }
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         private static void Main()
         {
-            ServiceBase[] ServicesToRun;
             RegisterContainerTypes();
-            ServicesToRun = new ServiceBase[]
-            {
-                Container.Resolve<HardwareAndSoftwareInventoryService>()
-            };
-            ServiceBase.Run(ServicesToRun);
+            var servicesToRun = new ServiceBase[]
+                                              {
+                                                  Container.Resolve<HardwareAndSoftwareInventoryService>()
+                                              };
+            ServiceBase.Run(servicesToRun);
         }
 
         /// <summary>
@@ -43,12 +45,13 @@
         private static void RegisterContainerTypes()
         {
             var builder = new ContainerBuilder();
-
-            builder.RegisterType<HardwareAndSoftwareInventoryService>().AsSelf();
-            builder.RegisterType<ScanFileSystem>().As<IPopulateFileSystem>() // Populate the files and their metadata from the filesystem before the service starts
-                .OnActivated(activationEvent => activationEvent.Instance.PopulateFiles()); 
-            builder.RegisterType<WindowsEventLogger>().As<ILogger>();
+            
+            builder.RegisterType<PopulateFileSystem>().As<IPopulateFileSystem>();
+            builder.RegisterType<WindowsEventLogger>().As<ILogger>().SingleInstance();
             builder.RegisterType<FilesSystemWatcher>().As<IFilesWatcher>();
+            builder.Register(
+                componentContext => new HardwareAndSoftwareInventoryService(Container, componentContext.Resolve<ILogger>()));
+            builder.RegisterType<PopulateWmiInformation>().As<IPopulateWMIInfo>();
 
             Container = builder.Build();
         }

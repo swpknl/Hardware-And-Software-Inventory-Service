@@ -15,13 +15,12 @@
         static HardDiskDrivesInfo()
         {
             HardDiskDrives = DriveInfo.GetDrives().
-                Where(diskDrive => diskDrive.DriveType == DriveType.Fixed)
-                .ToList();
+                Where(diskDrive => diskDrive.DriveType == DriveType.Fixed);
         }
 
         /// <summary>
         /// Gets the hard disk drives on the current system
         /// </summary>
-        public static List<DriveInfo> HardDiskDrives { get; private set; }
+        public static IEnumerable<DriveInfo> HardDiskDrives { get; private set; }
     }
 }

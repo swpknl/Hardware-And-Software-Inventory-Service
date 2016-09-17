@@ -20,7 +20,7 @@
         /// </param>
         public void LogException(string value, Exception exception)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -31,7 +31,7 @@
         /// </param>
         public void LogInfo(string value)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

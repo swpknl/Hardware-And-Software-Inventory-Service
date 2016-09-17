@@ -9,13 +9,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entities", "Entities\Entiti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Constants", "Constants\Constants.csproj", "{3FD3D26A-F16E-45FF-A384-5FA4074A581C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSystemPopulation", "FileSystemPopulation\FileSystemPopulation.csproj", "{2A96F8E7-76F6-4592-B06E-2EB661F99FDB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopulateFileSystem", "FileSystemPopulation\PopulateFileSystem.csproj", "{2A96F8E7-76F6-4592-B06E-2EB661F99FDB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helpers", "Helpers\Helpers.csproj", "{197A7296-7BE5-462F-8029-CA8FBC5F1751}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logger", "Logger\Logger.csproj", "{A587D1F5-F345-4086-9658-52217153927D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilesWatcher", "FilesWatcher\FilesWatcher.csproj", "{68685631-14F0-4B01-A2E3-E830739AF848}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopulateWMIInfo", "PopulateHardwareInfo\PopulateWMIInfo.csproj", "{DACE4019-A5E8-4ED1-AC55-999832960A95}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{68685631-14F0-4B01-A2E3-E830739AF848}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68685631-14F0-4B01-A2E3-E830739AF848}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68685631-14F0-4B01-A2E3-E830739AF848}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DACE4019-A5E8-4ED1-AC55-999832960A95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DACE4019-A5E8-4ED1-AC55-999832960A95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DACE4019-A5E8-4ED1-AC55-999832960A95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DACE4019-A5E8-4ED1-AC55-999832960A95}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
