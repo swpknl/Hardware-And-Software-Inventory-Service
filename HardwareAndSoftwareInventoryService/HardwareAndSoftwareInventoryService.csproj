@@ -96,6 +96,14 @@
       <Project>{DACE4019-A5E8-4ED1-AC55-999832960A95}</Project>
       <Name>PopulateWMIInfo</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PopulateRegistryInformation\PopulateRegistryInformation.csproj">
+      <Project>{7403CAB8-5D3B-4050-A30F-6F1DB3931E74}</Project>
+      <Name>PopulateRegistryInformation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RegistryChangesMonitor\RegistryChangesMonitor.csproj">
+      <Project>{1B10F2E2-FDE9-47D3-8255-B225E3F2C32E}</Project>
+      <Name>RegistryChangesMonitor</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HardwareAndSoftwareInventoryService.resx">

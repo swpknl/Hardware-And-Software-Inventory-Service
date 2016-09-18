@@ -13,8 +13,14 @@
     using Logger.Contracts;
     using Logger.Impl;
 
+    using PopulateRegistryInformation.Contracts;
+    using PopulateRegistryInformation.Impl;
+
     using PopulateWMIInfo.Contracts;
     using PopulateWMIInfo.Impl;
+
+    using RegistryChangesMonitor.Contracts;
+    using RegistryChangesMonitor.Impl;
 
     /// <summary>
     /// The main program.
@@ -51,7 +57,9 @@
             builder.RegisterType<FilesSystemWatcher>().As<IFilesWatcher>();
             builder.Register(
                 componentContext => new HardwareAndSoftwareInventoryService(Container, componentContext.Resolve<ILogger>()));
-            builder.RegisterType<PopulateWmiInformation>().As<IPopulateWMIInfo>();
+            builder.RegisterType<PopulateWmiInformationFacade>().As<IPopulateWMIInfoFacade>();
+            builder.Register(componentContext => new PopulateRegistryInfoFacade(componentContext.Resolve<ILogger>())).As<IPopulateRegistryInfoFacade>();
+            builder.RegisterType<RegistryMonitorFacade>().As<IRegistryMonitorFacade>();
 
             Container = builder.Build();
         }

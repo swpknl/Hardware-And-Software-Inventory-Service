@@ -17,7 +17,12 @@
 
     using Logger.Contracts;
 
+    using PopulateRegistryInformation.Contracts;
+    using PopulateRegistryInformation.Impl;
+
     using PopulateWMIInfo.Contracts;
+
+    using RegistryChangesMonitor.Contracts;
 
     /// <summary>
     /// The hardware and software inventory service.
@@ -76,7 +81,9 @@
             System.Diagnostics.Debugger.Launch();
             Task.Factory.StartNew(() => this.container.Resolve<IPopulateFileSystem>().PopulateFiles())
                 .ContinueWith((antecedent) => this.container.Resolve<IFilesWatcher>().BeginMonitoringFiles());
-            Task.Factory.StartNew(() => this.container.Resolve<IPopulateWMIInfo>().PopulateWMIInfo());
+            Task.Factory.StartNew(() => this.container.Resolve<IPopulateWMIInfoFacade>().PopulateWMIInfo());
+            Task.Factory.StartNew(() => this.container.Resolve<IPopulateRegistryInfoFacade>().PopulateRegistryInformation())
+                .ContinueWith((antecedent) => this.container.Resolve<IRegistryMonitorFacade>().BeginMonitoringRegistry());
         }
 
         /// <summary>
@@ -84,6 +91,7 @@
         /// </summary>
         protected override void OnStop()
         {
+            this.container.Resolve<IRegistryMonitorFacade>().StopMonitoringRegistry();
             this.container.Dispose();
         }
     }

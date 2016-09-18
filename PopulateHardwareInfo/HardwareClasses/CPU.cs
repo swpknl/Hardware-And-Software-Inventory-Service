@@ -24,28 +24,23 @@
         {
             this.cpuInfoList = new List<CPUInfo>();
             this.searcher = new ManagementObjectSearcher(
-                WmiConstants.WmiNamespace,
+                WmiConstants.WmiRootNamespace,
                 string.Format(
-                    "SELECT {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}",
+                    "SELECT {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13} FROM Win32_Processor",
                     WmiConstants.Name,
                     WmiConstants.Manufacturer,
-                    WmiConstants.Model,
                     WmiConstants.Description,
-                    WmiConstants.ThreadCount,
                     WmiConstants.NumberOfCores,
                     WmiConstants.NumberOfLogicalProcessors,
                     WmiConstants.ProcessorId,
                     WmiConstants.SocketDesignation,
                     WmiConstants.MaxClockSpeed,
-                    WmiConstants.Voltage,
+                    WmiConstants.CurrentVoltage,
                     WmiConstants.AddressWidth,
-                    WmiConstants.Device,
+                    WmiConstants.DeviceID,
                     WmiConstants.L2CacheSize,
                     WmiConstants.L3CacheSize,
-                    WmiConstants.NumberOfEnabledCore,
-                    WmiConstants.CurrentClockSpeed,
-                    WmiConstants.SerialNumber,
-                    WmiConstants.VirtualizationFirmwareEnabled));
+                    WmiConstants.CurrentClockSpeed));
         }
 
         /// <summary>
@@ -53,31 +48,27 @@
         /// </summary>
         public void GetWMIInfo()
         {
+            // TODO: Model, Threadcount, NumberOfEnabledCores, SerialNumber and VirtualizationFirmwareEnabled(not present before Windows 8) 
+            // info are not present before Windows 10
             foreach (var queryObject in this.searcher.Get())
             {
                 var cpuInfo = new CPUInfo
                                   {
                                       Name = queryObject[WmiConstants.Name],
                                       Manufacturer = queryObject[WmiConstants.Manufacturer],
-                                      Model = queryObject[WmiConstants.Model],
                                       Description = queryObject[WmiConstants.Description],
-                                      ThreadCount = queryObject[WmiConstants.ThreadCount],
                                       NumberOfCores = queryObject[WmiConstants.NumberOfCores],
                                       NumberOfLogicalProcessors =
                                           queryObject[WmiConstants.NumberOfLogicalProcessors],
                                       ProcessorId = queryObject[WmiConstants.ProcessorId],
                                       SocketDesignation = queryObject[WmiConstants.SocketDesignation],
                                       MaxClockSpeed = queryObject[WmiConstants.MaxClockSpeed],
-                                      Voltage = queryObject[WmiConstants.Voltage],
+                                      Voltage = queryObject[WmiConstants.CurrentVoltage],
                                       AddressWidth = queryObject[WmiConstants.AddressWidth],
-                                      Device = queryObject[WmiConstants.Device],
+                                      Device = queryObject[WmiConstants.DeviceID],
                                       L2CacheSize = queryObject[WmiConstants.L2CacheSize],
                                       L3CacheSize = queryObject[WmiConstants.L3CacheSize],
-                                      NumberOfEnabledCore = queryObject[WmiConstants.NumberOfEnabledCore],
-                                      CurrentClockSpeed = queryObject[WmiConstants.CurrentClockSpeed],
-                                      SerialNumber = queryObject[WmiConstants.SerialNumber],
-                                      VirtualizationFirmwareEnabled =
-                                          queryObject[WmiConstants.VirtualizationFirmwareEnabled]
+                                      CurrentClockSpeed = queryObject[WmiConstants.CurrentClockSpeed]
                                   };
                 this.cpuInfoList.Add(cpuInfo);
             }

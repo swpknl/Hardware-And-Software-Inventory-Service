@@ -8,14 +8,14 @@
     /// <summary>
     /// Class for populating hardware information.
     /// </summary>
-    public class PopulateWmiInformation : IPopulateWMIInfo
+    public class PopulateWmiInformationFacade : IPopulateWMIInfoFacade
     {
         private List<IWmiInfo> wmiInfoList;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopulateWmiInformation"/> class.
+        /// Initializes a new instance of the <see cref="PopulateWmiInformationFacade"/> class.
         /// </summary>
-        public PopulateWmiInformation()
+        public PopulateWmiInformationFacade()
         {
             this.wmiInfoList = new List<IWmiInfo>()
                                  {

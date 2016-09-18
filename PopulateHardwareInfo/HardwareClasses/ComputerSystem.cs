@@ -31,13 +31,12 @@
         {
             this.computerSystemInfoList = new List<ComputerSystemInfo>();
             this.computerSystemSearcher = new ManagementObjectSearcher(
-                WmiConstants.WmiNamespace,
+                WmiConstants.WmiRootNamespace,
                 string.Format(
-                    "SELECT {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11} FROM Win32_ComputerSystem",
+                    "SELECT {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10} FROM Win32_ComputerSystem",
                     WmiConstants.Name,
                     WmiConstants.Status,
                     WmiConstants.PrimaryOwnerName,
-                    WmiConstants.SystemSKUNumber,
                     WmiConstants.SystemType,
                     WmiConstants.ThermalState,
                     WmiConstants.PartOfDomain,
@@ -47,13 +46,13 @@
                     WmiConstants.Manufacturer,
                     WmiConstants.Model));
             this.systemEnclosureSearcher = new ManagementObjectSearcher(
-                WmiConstants.WmiNamespace,
-                string.Format("SELECT {0} FROM Win32_SystemEnclosure", WmiConstants.ChassisType));
+                WmiConstants.WmiRootNamespace,
+                string.Format("SELECT {0} FROM Win32_SystemEnclosure", WmiConstants.ChassisTypes));
             this.batterySearcher = new ManagementObjectSearcher(
-                WmiConstants.WmiNamespace,
+                WmiConstants.WmiRootNamespace,
                 string.Format("SELECT {0} FROM Win32_Battery", WmiConstants.StatusInfo));
             this.operatingSystemSearcher = new ManagementObjectSearcher(
-                WmiConstants.WmiNamespace,
+                WmiConstants.WmiRootNamespace,
                 string.Format("SELECT {0} FROM Win32_OperatingSystem", WmiConstants.Caption));
         }
 
@@ -62,6 +61,7 @@
         /// </summary>
         public void GetWMIInfo()
         {
+            // TODO: SystemSKUNumber is not supported before Windows 10
             foreach (var queryObject in this.computerSystemSearcher.Get())
             {
                 var computerSystemInfo = new ComputerSystemInfo
@@ -69,7 +69,6 @@
                     Name = queryObject[WmiConstants.Name],
                     Status = queryObject[WmiConstants.Status],
                     PrimaryOwnerName = queryObject[WmiConstants.PrimaryOwnerName],
-                    SystemSKUNumber = queryObject[WmiConstants.SystemSKUNumber],
                     SystemType = queryObject[WmiConstants.SystemType],
                     ThermalState = queryObject[WmiConstants.ThermalState],
                     PartOfDomain = queryObject[WmiConstants.PartOfDomain],
@@ -79,7 +78,12 @@
                     Manufacturer = queryObject[WmiConstants.Manufacturer],
                     Model = queryObject[WmiConstants.Model]
                 };
-
+                computerSystemInfo.IsPortable = this.CheckIfSystemIsLaptop();
+                computerSystemInfo.IsServer = this.CheckIfSystemIsServer();
+                computerSystemInfo.IsVirtual = this.CheckIfSystemIsVirtualMachine(
+                    computerSystemInfo.Model.ToString(),
+                    computerSystemInfo.Manufacturer.ToString());
+                computerSystemInfo.Hypervisor = this.GetHypervisorInfo(computerSystemInfo.Manufacturer.ToString());
                 this.computerSystemInfoList.Add(computerSystemInfo);
             }
         }
@@ -164,7 +168,9 @@
             uint chassisType = 0, statusInfo = 0;
             foreach (var queryObject in this.systemEnclosureSearcher.Get())
             {
-                chassisType = (uint)queryObject[WmiConstants.ChassisType];
+                var chassisTypes = (ushort[])queryObject.GetPropertyValue(WmiConstants.ChassisTypes);
+                chassisType = chassisTypes[0];
+
             }
 
             foreach (var queryObject in this.batterySearcher.Get())

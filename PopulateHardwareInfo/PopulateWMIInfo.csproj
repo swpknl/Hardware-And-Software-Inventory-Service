@@ -41,21 +41,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Contracts\IGetWmiInfo.cs" />
-    <Compile Include="Contracts\IPopulateWMIInfo.cs" />
-    <Compile Include="Impl\PopulateWMIInformation.cs" />
+    <Compile Include="Contracts\IPopulateWMIInfoFacade.cs" />
+    <Compile Include="Impl\PopulateWMIInformationFacade.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rules\Baseboard.cs" />
-    <Compile Include="Rules\BIOS.cs" />
-    <Compile Include="Rules\ComputerSystem.cs" />
-    <Compile Include="Rules\ComputerSystemProduct.cs" />
-    <Compile Include="Rules\CPU.cs" />
-    <Compile Include="Rules\DiskDrive.cs" />
-    <Compile Include="Rules\LogicalDisk.cs" />
-    <Compile Include="Rules\OperatingSystem.cs" />
-    <Compile Include="Rules\Partition.cs" />
-    <Compile Include="Rules\PortConnector.cs" />
-    <Compile Include="Rules\Printer.cs" />
-    <Compile Include="Rules\SoftwareLicensingService.cs" />
+    <Compile Include="HardwareClasses\Baseboard.cs" />
+    <Compile Include="HardwareClasses\BIOS.cs" />
+    <Compile Include="HardwareClasses\ComputerSystem.cs" />
+    <Compile Include="HardwareClasses\ComputerSystemProduct.cs" />
+    <Compile Include="HardwareClasses\CPU.cs" />
+    <Compile Include="HardwareClasses\DiskDrive.cs" />
+    <Compile Include="HardwareClasses\LogicalDisk.cs" />
+    <Compile Include="HardwareClasses\OperatingSystem.cs" />
+    <Compile Include="HardwareClasses\Partition.cs" />
+    <Compile Include="HardwareClasses\PortConnector.cs" />
+    <Compile Include="HardwareClasses\Printer.cs" />
+    <Compile Include="HardwareClasses\SoftwareLicensingService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Constants\Constants.csproj">

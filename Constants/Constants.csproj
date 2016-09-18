@@ -46,6 +46,8 @@
     <Compile Include="HardDiskDrivesInfo.cs" />
     <Compile Include="HypervisorCompanies.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegistryKeyConstants.cs" />
+    <Compile Include="RegistryPropertiesConstants.cs" />
     <Compile Include="Symbols.cs" />
     <Compile Include="WmiConstants.cs" />
   </ItemGroup>

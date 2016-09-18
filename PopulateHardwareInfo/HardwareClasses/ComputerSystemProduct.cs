@@ -24,7 +24,7 @@
         public ComputerSystemProduct()
         {
             this.searcher = new ManagementObjectSearcher(
-                WmiConstants.WmiNamespace,
+                WmiConstants.WmiRootNamespace,
                 string.Format(
                     "SELECT {0}, {1} FROM Win32_ComputerSystemProduct",
                     WmiConstants.IdentifyingNumber,

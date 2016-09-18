@@ -25,18 +25,8 @@
         {
             this.biosInfoList = new List<BIOSInfo>();
             this.searcher = new ManagementObjectSearcher(
-                WmiConstants.WmiNamespace,
-                string.Format(
-                    "SELECT {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8} FROM Win32_BIOS",
-                    WmiConstants.Manufacturer,
-                    WmiConstants.Version,
-                    WmiConstants.SystemBIOSMajorVersion,
-                    WmiConstants.SystemBIOSMinorVersion,
-                    WmiConstants.SMBIOSBIOSVersion,
-                    WmiConstants.SMBIOSMajorVersion,
-                    WmiConstants.SMBIOSMinorVersion,
-                    WmiConstants.ReleaseDate,
-                    WmiConstants.SerialNumber));
+                WmiConstants.WmiRootNamespace,
+                    "SELECT * FROM Win32_BIOS");
         }
 
         /// <summary>
@@ -44,14 +34,13 @@
         /// </summary>
         public void GetWMIInfo()
         {
+            // TODO: SystemBIOSMajorVersion and SystemBiosMinorVersion are not present before Windows 10
             foreach (var queryObj in this.searcher.Get())
             {
                 var biosInfo = new BIOSInfo
                 {
                     Manufacturer = queryObj[WmiConstants.Manufacturer],
                     Version = queryObj[WmiConstants.Version],
-                    SystemBIOSMajorVersion = queryObj[WmiConstants.SystemBIOSMajorVersion],
-                    SystemBIOSMinorVersion = queryObj[WmiConstants.SystemBIOSMinorVersion],
                     SMBIOSBIOSVersion = queryObj[WmiConstants.SMBIOSBIOSVersion],
                     SMBIOSMajorVersion = queryObj[WmiConstants.SMBIOSMajorVersion],
                     SMBIOSMinorVersion = queryObj[WmiConstants.SMBIOSMinorVersion],

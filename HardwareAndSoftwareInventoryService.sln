@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilesWatcher", "FilesWatche
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopulateWMIInfo", "PopulateHardwareInfo\PopulateWMIInfo.csproj", "{DACE4019-A5E8-4ED1-AC55-999832960A95}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopulateRegistryInformation", "PopulateRegistryInformation\PopulateRegistryInformation.csproj", "{7403CAB8-5D3B-4050-A30F-6F1DB3931E74}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegistryChangesMonitor", "RegistryChangesMonitor\RegistryChangesMonitor.csproj", "{1B10F2E2-FDE9-47D3-8255-B225E3F2C32E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +61,14 @@ Global
 		{DACE4019-A5E8-4ED1-AC55-999832960A95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DACE4019-A5E8-4ED1-AC55-999832960A95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DACE4019-A5E8-4ED1-AC55-999832960A95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7403CAB8-5D3B-4050-A30F-6F1DB3931E74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7403CAB8-5D3B-4050-A30F-6F1DB3931E74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7403CAB8-5D3B-4050-A30F-6F1DB3931E74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7403CAB8-5D3B-4050-A30F-6F1DB3931E74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B10F2E2-FDE9-47D3-8255-B225E3F2C32E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B10F2E2-FDE9-47D3-8255-B225E3F2C32E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B10F2E2-FDE9-47D3-8255-B225E3F2C32E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B10F2E2-FDE9-47D3-8255-B225E3F2C32E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

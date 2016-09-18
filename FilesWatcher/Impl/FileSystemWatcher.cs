@@ -40,7 +40,7 @@
                     watcher.Created += OnChanged;
                     watcher.Deleted += OnChanged;
                     watcher.Renamed += OnRenamed;
-
+                    
                     Trace.WriteLine(
                         "Creating the FileSystemWatcher class for the disk drive: " + hardDiskDrive
                         + " and file extenion: " + fileType);

@@ -3,7 +3,7 @@
     /// <summary>
     /// The PopulateHardwareInfo interface.
     /// </summary>
-    public interface IPopulateWMIInfo
+    public interface IPopulateWMIInfoFacade
     {
         /// <summary>
         /// Contract for populating hardware info.
