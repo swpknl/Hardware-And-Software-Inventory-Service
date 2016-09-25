@@ -66,7 +66,6 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Win32.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -88,6 +87,10 @@
     <ProjectReference Include="..\FileSystemPopulation\PopulateFileSystem.csproj">
       <Project>{2A96F8E7-76F6-4592-B06E-2EB661F99FDB}</Project>
       <Name>PopulateFileSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Helpers\Helpers.csproj">
+      <Project>{197a7296-7be5-462f-8029-ca8fbc5f1751}</Project>
+      <Name>Helpers</Name>
     </ProjectReference>
     <ProjectReference Include="..\Logger\Logger.csproj">
       <Project>{A587D1F5-F345-4086-9658-52217153927D}</Project>

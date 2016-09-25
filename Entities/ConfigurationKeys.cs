@@ -1,5 +1,7 @@
 ﻿namespace Entities
 {
+    using System;
+
     /// <summary>
     /// The configuration keys.
     /// </summary>
@@ -9,7 +11,9 @@
 
         public static string DbPassword { get; set; }
 
-        public static double ReportingInterval { get; set; }
+        public static TimeSpan BaseTime { get; set; }
+
+        public static TimeSpan TimeSpan { get; set; }
 
         public static string[] DirectoriesToExclude { get; set; }
 

@@ -44,7 +44,7 @@
         /// </summary>
         public void StopRegistryMonitoring()
         {
-            // this.regKeyMonitor.Stop();
+            this.regKeyMonitor.Stop();
             this.regTreeMonitor.Stop();
         }
 

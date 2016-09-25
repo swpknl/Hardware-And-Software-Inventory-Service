@@ -1,6 +1,8 @@
 ﻿namespace Helpers
 {
     using System.Linq;
+    using System.Security.Cryptography;
+    using System.Text;
     using System.Text.RegularExpressions;
 
     using Constants;
@@ -23,7 +25,6 @@
         /// </param>
         public static void PopulateMetaData(this FileSystemInformation fileSystemInfo)
         {
-            // TODO: Generate unique hash
             using (var shellObject = ShellObject.FromParsingName(fileSystemInfo.FilePath))
             {
                 var description = shellObject.Properties.GetProperty(SystemProperties.System.FileDescription).ValueAsObject;
@@ -39,6 +40,27 @@
                 var fileSize = shellObject.Properties.GetProperty(SystemProperties.System.TotalFileSize).ValueAsObject;
                 fileSystemInfo.FileSize = fileSize == null ? string.Empty : fileSize.ToString().RemoveSpecialCharacters().Trim();
             }
+            fileSystemInfo.Md5 = GenerateFileHash(fileSystemInfo.FileName);
+        }
+
+        private static string GenerateFileHash(string input)
+        {
+            // step 1, calculate MD5 hash from input
+            MD5 md5 = MD5.Create();
+
+            var inputBytes = Encoding.ASCII.GetBytes(input);
+
+            var hash = md5.ComputeHash(inputBytes);
+
+            // step 2, convert byte array to hex string
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < hash.Length; i++)
+            {
+                sb.Append(hash[i].ToString("X2"));
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>

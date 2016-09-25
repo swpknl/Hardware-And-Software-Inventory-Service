@@ -9,10 +9,12 @@
 
         public const string DbPassword = "DbPassword";
 
-        public const string ReportingInterval = "ReportingInterval";
+        public const string BaseTime = "BaseTime";
 
         public const string DirectoryToExclude = "DirectoryToExclude";
 
         public const string FileTypesToMonitor = "FileTypesToMonitor";
+
+        public const string TimeSpan = "TimeSpan";
     }
 }
