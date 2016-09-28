@@ -6,6 +6,8 @@
 
     using PopulateWMIInfo.Contracts;
 
+    using ReportToRestEndpoint.Contracts;
+
     /// <summary>
     /// The software licensing service.
     /// </summary>
@@ -30,18 +32,39 @@
         /// </summary>
         public void GetWMIInfo()
         {
-            foreach (var queryObject in this.searcher.Get())
-            {
-                this.oa3XOriginalProductKey = queryObject[WmiConstants.OA3xOriginalProductKey].ToString();
-            }
+            this.oa3XOriginalProductKey = this.GetValue();
         }
 
         /// <summary>
         /// The report WMI info.
         /// </summary>
-        public void ReportWMIInfo()
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
+        public void ReportWMIInfo(IVisitor visitor)
         {
             
+        }
+
+        public void CheckForHardwareChanges()
+        {
+            var tempValue = this.GetValue();
+            var changedHardwareValue = tempValue.Equals(
+                this.oa3XOriginalProductKey,
+                System.StringComparison.OrdinalIgnoreCase)
+                                           ? string.Empty
+                                           : tempValue;
+        }
+
+        private string GetValue()
+        {
+            var tempValue = string.Empty;
+            foreach (var queryObject in this.searcher.Get())
+            {
+                tempValue = queryObject[WmiConstants.OA3xOriginalProductKey].ToString();
+            }
+
+            return tempValue;
         }
     }
 }

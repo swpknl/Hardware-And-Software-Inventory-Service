@@ -5,6 +5,8 @@
     using PopulateWMIInfo.Contracts;
     using PopulateWMIInfo.Rules;
 
+    using ReportToRestEndpoint.Contracts;
+
     /// <summary>
     /// Class for populating hardware information.
     /// </summary>
@@ -12,10 +14,12 @@
     {
         private List<IWmiInfo> wmiInfoList;
 
+        private IVisitor visitor;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PopulateWmiInformationFacade"/> class.
         /// </summary>
-        public PopulateWmiInformationFacade()
+        public PopulateWmiInformationFacade(IVisitor visitor)
         {
             this.wmiInfoList = new List<IWmiInfo>()
                                  {
@@ -32,6 +36,7 @@
                                      new Printer(),
                                      new SoftwareLicensingService()
                                  };
+            this.visitor = visitor;
         }
 
         /// <summary>
@@ -42,7 +47,7 @@
             foreach (var wmiClass in this.wmiInfoList)
             {
                 wmiClass.GetWMIInfo();
-                wmiClass.ReportWMIInfo();
+                wmiClass.ReportWMIInfo(this.visitor);
             }
         }
     }

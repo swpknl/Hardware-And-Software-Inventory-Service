@@ -7,13 +7,17 @@
 
     using Entities;
 
+    using Helpers;
+
     using PopulateWMIInfo.Contracts;
+
+    using ReportToRestEndpoint.Contracts;
 
     public class OperatingSystem : IWmiInfo
     {
         private ManagementObjectSearcher seacher;
 
-        private readonly List<OperatingSystemInfo> operatingSystemInfoList;
+        private List<OperatingSystemInfo> operatingSystemInfoList;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OperatingSystem"/> class.
@@ -44,40 +48,53 @@
         /// </summary>
         public void GetWMIInfo()
         {
-            foreach (var queryObject in this.seacher.Get())
-            {
-                var operatingSystemInfo = new OperatingSystemInfo
-                                              {
-                                                  OSType = queryObject[WmiConstants.OSType],
-                                                  Caption = queryObject[WmiConstants.Caption],
-                                                  Manufacturer =
-                                                      queryObject[WmiConstants.Manufacturer],
-                                                  Version = queryObject[WmiConstants.Version],
-                                                  CSDVersion = queryObject[WmiConstants.CSDVersion],
-                                                  SerialNumber =
-                                                      queryObject[WmiConstants.SerialNumber],
-                                                  OSArchitecture =
-                                                      queryObject[WmiConstants.OSArchitecture],
-                                                  OperatingSystemSKU =
-                                                      queryObject[WmiConstants.OperatingSystemSKU],
-                                                  Locale = queryObject[WmiConstants.Locale],
-                                                  CountryCode = queryObject[WmiConstants.CountryCode],
-                                                  OSLanguage = queryObject[WmiConstants.Organization],
-                                                  SystemDirectory =
-                                                      queryObject[WmiConstants.SystemDirectory],
-                                                  Organization =
-                                                      queryObject[WmiConstants.Organization]
-                                              };
-                this.operatingSystemInfoList.Add(operatingSystemInfo);
-            }
+            this.operatingSystemInfoList = this.GetValue();
         }
 
         /// <summary>
         /// The report WMI info.
         /// </summary>
-        public void ReportWMIInfo()
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
+        public void ReportWMIInfo(IVisitor visitor)
         {
             
+        }
+
+        public void CheckForHardwareChanges()
+        {
+            var changedHardwareList = new List<OperatingSystemInfo>();
+            var tempList = this.GetValue();
+            changedHardwareList = tempList.GetDifference(this.operatingSystemInfoList);
+        }
+
+        private List<OperatingSystemInfo> GetValue()
+        {
+            var tempList = new List<OperatingSystemInfo>();
+            foreach (var queryObject in this.seacher.Get())
+            {
+                var operatingSystemInfo = new OperatingSystemInfo
+                {
+                    OSType = queryObject[WmiConstants.OSType],
+                    Caption = queryObject[WmiConstants.Caption],
+                    Manufacturer = queryObject[WmiConstants.Manufacturer],
+                    Version = queryObject[WmiConstants.Version],
+                    CSDVersion = queryObject[WmiConstants.CSDVersion],
+                    SerialNumber = queryObject[WmiConstants.SerialNumber],
+                    OSArchitecture = queryObject[WmiConstants.OSArchitecture],
+                    OperatingSystemSKU =
+                                                      queryObject[WmiConstants.OperatingSystemSKU],
+                    Locale = queryObject[WmiConstants.Locale],
+                    CountryCode = queryObject[WmiConstants.CountryCode],
+                    OSLanguage = queryObject[WmiConstants.Organization],
+                    SystemDirectory = queryObject[WmiConstants.SystemDirectory],
+                    Organization = queryObject[WmiConstants.Organization]
+                };
+                tempList.Add(operatingSystemInfo);
+            }
+
+            return tempList;
         }
     }
 }

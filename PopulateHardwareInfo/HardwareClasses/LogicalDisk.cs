@@ -1,19 +1,26 @@
 ﻿namespace PopulateWMIInfo.Rules
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Management;
 
     using Constants;
 
     using Entities;
 
+    using Helpers;
+
+    using Newtonsoft.Json.Linq;
+
     using PopulateWMIInfo.Contracts;
+
+    using ReportToRestEndpoint.Contracts;
 
     public class LogicalDisk : IWmiInfo
     {
         private ManagementObjectSearcher searcher;
 
-        private readonly List<LogicalDrivesInfo> logicalDrivesInfoList;
+        private List<LogicalDrivesInfo> logicalDrivesInfoList;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogicalDisk"/> class.
@@ -43,6 +50,12 @@
         /// </summary>
         public void GetWMIInfo()
         {
+            this.logicalDrivesInfoList = this.GetLogicalDrivesInfos();
+        }
+
+        private List<LogicalDrivesInfo> GetLogicalDrivesInfos()
+        {
+            var tempList = new List<LogicalDrivesInfo>();
             foreach (var queryObject in this.searcher.Get())
             {
                 var logicalDrivesInfo = new LogicalDrivesInfo
@@ -62,16 +75,43 @@
                                                     queryObject[WmiConstants.VolumeSerialNumber],
                                                 VolumeName = queryObject[WmiConstants.VolumeName]
                                             };
-                this.logicalDrivesInfoList.Add(logicalDrivesInfo);
+                tempList.Add(logicalDrivesInfo);
             }
+
+            return tempList;
         }
 
         /// <summary>
         /// The report WMI info.
         /// </summary>
-        public void ReportWMIInfo()
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
+        public void ReportWMIInfo(IVisitor visitor)
         {
             
+        }
+
+        /// <summary>
+        /// The check for hardware changes.
+        /// </summary>
+        public void CheckForHardwareChanges(IVisitor visitor)
+        {
+            var changedHardwareList = new List<LogicalDrivesInfo>();
+            var tempList = this.GetLogicalDrivesInfos();
+            changedHardwareList = tempList.GetDifference(this.logicalDrivesInfoList);
+        }
+
+        private string ConvertLogicalDrivesInfoToJson(List<LogicalDrivesInfo> logicalDrivesInfoList)
+        {
+            var data = new JObject(
+                new JProperty(
+                    "resources",
+                    new JArray(
+                        from logicalDrivesInfo in logicalDrivesInfoList
+                        select 
+                        new JObject(
+                            new JProperty()))))
         }
     }
 }

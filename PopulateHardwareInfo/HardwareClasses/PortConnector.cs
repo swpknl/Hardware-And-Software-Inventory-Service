@@ -7,7 +7,11 @@
 
     using Entities;
 
+    using Helpers;
+
     using PopulateWMIInfo.Contracts;
+
+    using ReportToRestEndpoint.Contracts;
 
     /// <summary>
     /// The port connector information.
@@ -38,24 +42,39 @@
         /// </summary>
         public void GetWMIInfo()
         {
-            foreach (var queryObject in this.searcher.Get())
-            {
-                var portConnectorInfo = new PortConnectorInfo
-                                            {
-                                                Tag = queryObject[WmiConstants.Tag],
-                                                InternalReferenceDesignator = queryObject[WmiConstants.InternalReferenceDesignator],
-                                                ExternalReferenceDesignator = queryObject[WmiConstants.ExternalReferenceDesignator]
-                                            };
-                this.portConnectorInfoList.Add(portConnectorInfo);
-            }
+            this.portConnectorInfoList = this.GetValue();
         }
 
         /// <summary>
         /// The report WMI info.
         /// </summary>
-        public void ReportWMIInfo()
+        public void ReportWMIInfo(IVisitor visitor)
         {
             
+        }
+
+        public void CheckForHardwareChanges()
+        {
+            var changedHardwareList = new List<PortConnectorInfo>();
+            var tempList = this.GetValue();
+            changedHardwareList = tempList.GetDifference(this.portConnectorInfoList);
+        }
+
+        private List<PortConnectorInfo> GetValue()
+        {
+            var tempList = new List<PortConnectorInfo>();
+            foreach (var queryObject in this.searcher.Get())
+            {
+                var portConnectorInfo = new PortConnectorInfo
+                {
+                    Tag = queryObject[WmiConstants.Tag],
+                    InternalReferenceDesignator = queryObject[WmiConstants.InternalReferenceDesignator],
+                    ExternalReferenceDesignator = queryObject[WmiConstants.ExternalReferenceDesignator]
+                };
+                tempList.Add(portConnectorInfo);
+            }
+
+            return tempList;
         }
     }
 }

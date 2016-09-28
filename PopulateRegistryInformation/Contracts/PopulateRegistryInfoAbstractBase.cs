@@ -11,6 +11,8 @@
 
     using Microsoft.Win32;
 
+    using ReportToRestEndpoint.Contracts;
+
     /// <summary>
     /// The populate registry info abstract base.
     /// </summary>
@@ -75,7 +77,7 @@
         }
 
 
-        public void ReportRegistryInfo()
+        public void ReportRegistryInfo(IVisitor visitor)
         {
             
         }

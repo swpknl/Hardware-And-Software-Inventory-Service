@@ -7,7 +7,11 @@
 
     using Entities;
 
+    using Helpers;
+
     using PopulateWMIInfo.Contracts;
+
+    using ReportToRestEndpoint.Contracts;
 
     /// <summary>
     /// The partition WMI information.
@@ -42,28 +46,43 @@
         /// </summary>
         public void GetWMIInfo()
         {
-            foreach (var queryObject in this.searcher.Get())
-            {
-                var partitionInfo = new PartitionInfo
-                                        {
-                                            Name = queryObject[WmiConstants.Name],
-                                            Description = queryObject[WmiConstants.Description],
-                                            DiskIndex = queryObject[WmiConstants.DiskIndex],
-                                            Bootable = queryObject[WmiConstants.Bootable],
-                                            BootPartition = queryObject[WmiConstants.BootPartition],
-                                            Size = queryObject[WmiConstants.Size],
-                                            StartingOffset = queryObject[WmiConstants.StartingOffset]
-                                        };
-                this.partitionInfoList.Add(partitionInfo);
-            }
+            this.partitionInfoList = this.GetValue();
         }
 
         /// <summary>
         /// The report WMI info.
         /// </summary>
-        public void ReportWMIInfo()
+        public void ReportWMIInfo(IVisitor visitor)
         {
             
+        }
+
+        public void CheckForHardwareChanges()
+        {
+            var changedHardwareList = new List<PartitionInfo>();
+            var tempList = this.GetValue();
+            changedHardwareList = tempList.GetDifference(this.partitionInfoList);
+        }
+
+        private List<PartitionInfo> GetValue()
+        {
+            var tempList = new List<PartitionInfo>();
+            foreach (var queryObject in this.searcher.Get())
+            {
+                var partitionInfo = new PartitionInfo
+                {
+                    Name = queryObject[WmiConstants.Name],
+                    Description = queryObject[WmiConstants.Description],
+                    DiskIndex = queryObject[WmiConstants.DiskIndex],
+                    Bootable = queryObject[WmiConstants.Bootable],
+                    BootPartition = queryObject[WmiConstants.BootPartition],
+                    Size = queryObject[WmiConstants.Size],
+                    StartingOffset = queryObject[WmiConstants.StartingOffset]
+                };
+                tempList.Add(partitionInfo);
+            }
+
+            return tempList;
         }
     }
 }

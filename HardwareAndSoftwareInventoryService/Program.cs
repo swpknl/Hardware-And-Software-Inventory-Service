@@ -22,6 +22,9 @@
     using RegistryChangesMonitor.Contracts;
     using RegistryChangesMonitor.Impl;
 
+    using ReportToRestEndpoint.Contracts;
+    using ReportToRestEndpoint.Impl;
+
     /// <summary>
     /// The main program.
     /// </summary>
@@ -55,10 +58,12 @@
             builder.RegisterType<PopulateFileSystem>().As<IPopulateFileSystem>();
             builder.RegisterType<WindowsEventLogger>().As<ILogger>().SingleInstance();
             builder.RegisterType<FilesSystemWatcher>().As<IFilesWatcher>();
+            builder.RegisterType<RestApiVisitor>().As<IVisitor>();
             builder.Register(
                 componentContext => new HardwareAndSoftwareInventoryService(Container, componentContext.Resolve<ILogger>()));
-            builder.RegisterType<PopulateWmiInformationFacade>().As<IPopulateWMIInfoFacade>();
-            builder.Register(componentContext => new PopulateRegistryInfoFacade(componentContext.Resolve<ILogger>())).As<IPopulateRegistryInfoFacade>();
+            builder.Register(componentContext => new PopulateWmiInformationFacade(componentContext.Resolve<IVisitor>()));
+            builder.Register(componentContext => new PopulateRegistryInfoFacade(componentContext.Resolve<ILogger>(), componentContext.Resolve<IVisitor>()))
+                .As<IPopulateRegistryInfoFacade>();
             builder.RegisterType<RegistryMonitorFacade>().As<IRegistryMonitorFacade>();
 
             Container = builder.Build();

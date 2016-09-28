@@ -62,6 +62,10 @@
       <Project>{A587D1F5-F345-4086-9658-52217153927D}</Project>
       <Name>Logger</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ReportToRestEndpoint\ReportToRestEndpoint.csproj">
+      <Project>{D57955F1-3CB2-442D-8DDF-C6CC76E0B4C1}</Project>
+      <Name>ReportToRestEndpoint</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

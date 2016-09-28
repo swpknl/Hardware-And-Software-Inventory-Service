@@ -15,6 +15,8 @@
 
     using Logger.Contracts;
 
+    using ReportToRestEndpoint.Contracts;
+
     /// <summary>
     /// Class to scan the file system.
     /// </summary>
@@ -82,6 +84,17 @@
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// The report files.
+        /// </summary>
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
+        public void ReportFilesInfo(IVisitor visitor)
+        {
+            
         }
     }
 }

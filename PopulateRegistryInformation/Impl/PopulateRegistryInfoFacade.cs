@@ -7,6 +7,8 @@
     using PopulateRegistryInformation.Contracts;
     using PopulateRegistryInformation.RegistryKeys;
 
+    using ReportToRestEndpoint.Contracts;
+
     /// <summary>
     /// The populate registry info.
     /// </summary>
@@ -16,10 +18,18 @@
 
         private ILogger logger;
 
+        private IVisitor visitor;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PopulateRegistryInfoFacade"/> class.
         /// </summary>
-        public PopulateRegistryInfoFacade(ILogger logger)
+        /// <param name="logger">
+        /// The logger.
+        /// </param>
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
+        public PopulateRegistryInfoFacade(ILogger logger, IVisitor visitor)
         {
             this.logger = logger;
             this.registryKeysList = new List<IPopulateRegistryInfo>
@@ -27,6 +37,7 @@
                                             new Wow6432NodeRegistryInfo(this.logger),
                                             new MicrosoftRegistryInfo(this.logger)
                                         };
+            this.visitor = visitor;
         }
 
         /// <summary>
@@ -37,7 +48,7 @@
             foreach (var registryInfo in this.registryKeysList)
             {
                 registryInfo.PopulateRegistryInfo();
-                registryInfo.ReportRegistryInfo();
+                registryInfo.ReportRegistryInfo(this.visitor);
             }
         }
     }

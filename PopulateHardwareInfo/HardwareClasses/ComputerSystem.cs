@@ -1,20 +1,31 @@
 ﻿namespace PopulateWMIInfo.Rules
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Management;
 
     using Constants;
 
     using Entities;
 
+    using Helpers;
+
+    using Newtonsoft.Json.Linq;
+
     using PopulateWMIInfo.Contracts;
+
+    using ReportToRestEndpoint.Contracts;
 
     /// <summary>
     /// The computer system WMI info.
     /// </summary>
     public class ComputerSystem : IWmiInfo
     {
+        private const string ComputerSystemTableName = "client";
+
         private readonly ManagementObjectSearcher computerSystemSearcher;
+
+        private ManagementObjectSearcher computerSystemProductSearcher;
 
         private readonly ManagementObjectSearcher systemEnclosureSearcher;
 
@@ -22,7 +33,9 @@
 
         private readonly ManagementObjectSearcher operatingSystemSearcher;
 
-        private readonly List<ComputerSystemInfo> computerSystemInfoList;
+        private List<ComputerSystemInfo> computerSystemInfoList;
+
+        private List<ComputerSystemProductInfo> computerSystemProductInfoList;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ComputerSystem"/> class.
@@ -54,6 +67,13 @@
             this.operatingSystemSearcher = new ManagementObjectSearcher(
                 WmiConstants.WmiRootNamespace,
                 string.Format("SELECT {0} FROM Win32_OperatingSystem", WmiConstants.Caption));
+            this.computerSystemProductSearcher = new ManagementObjectSearcher(
+                WmiConstants.WmiRootNamespace,
+                string.Format(
+                    "SELECT {0}, {1} FROM Win32_ComputerSystemProduct",
+                    WmiConstants.IdentifyingNumber,
+                    WmiConstants.UUID));
+            this.computerSystemProductInfoList = new List<ComputerSystemProductInfo>();
         }
 
         /// <summary>
@@ -61,30 +81,110 @@
         /// </summary>
         public void GetWMIInfo()
         {
-            // TODO: SystemSKUNumber is not supported before Windows 10
-            foreach (var queryObject in this.computerSystemSearcher.Get())
+            this.computerSystemInfoList = this.GetComputerSystemValue();
+            this.computerSystemProductInfoList = this.GetComputerSystemProductValue();
+        }
+
+        /// <summary>
+        /// The report WMI info.
+        /// </summary>
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
+        public void ReportWMIInfo(IVisitor visitor)
+        {
+            var data = this.ConvertComputerSystemToJson(this.computerSystemInfoList, this.computerSystemProductInfoList);
+            visitor.Visit(ComputerSystemTableName, data);
+        }
+
+        /// <summary>
+        /// The convert computer system to json.
+        /// </summary>
+        /// <param name="computerSystemInfoList">
+        /// The computer system info list.
+        /// </param>
+        /// <param name="computerSystemProductInfoList">
+        /// The computer system product info list.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        private string ConvertComputerSystemToJson(List<ComputerSystemInfo> computerSystemInfoList, List<ComputerSystemProductInfo> computerSystemProductInfoList)
+        {
+            var data =
+                new JObject(
+                    new JProperty(
+                        "resource",
+                        new JArray(
+                            from computerSystemInfo in computerSystemInfoList
+                            select
+                                new JObject(
+                                new JProperty("organization", string.Empty),
+                                new JProperty("status_id", computerSystemInfo.Status),
+                                new JProperty(
+                                "is_virtual",
+                                GenericExtensions.GetBooleanValue((bool)computerSystemInfo.IsVirtual)),
+                                new JProperty("hypervisor_name", computerSystemInfo.Hypervisor),
+                                new JProperty(
+                                "is_server",
+                                GenericExtensions.GetBooleanValue((bool)computerSystemInfo.IsServer)),
+                                new JProperty(
+                                "is_portable",
+                                GenericExtensions.GetBooleanValue((bool)computerSystemInfo.IsPortable)),
+                                new JProperty("computer_id", computerSystemInfo.ComputerId),
+                                new JProperty("owner_name", computerSystemInfo.PrimaryOwnerName),
+                                new JProperty("sku", computerSystemInfo.SystemSKUNumber),
+                                new JProperty("system_type_id", computerSystemInfo.SystemType),
+                                new JProperty("thermal_state", computerSystemInfo.ThermalState),
+                                new JProperty(
+                                "is_part_of_domain",
+                                GenericExtensions.GetBooleanValue((bool)computerSystemInfo.PartOfDomain)),
+                                new JProperty("domain_id", computerSystemInfo.Domain),
+                                new JProperty("workgroup_id", computerSystemInfo.Workgroup),
+                                new JProperty("time_zone_id", computerSystemInfo.CurrentTimeZone),
+                                new JProperty("manufacturer", computerSystemInfo.Manufacturer),
+                                new JProperty("computer_model", computerSystemInfo.Model),
+                                from computerSystemProduct in computerSystemProductInfoList
+                                select
+                                new JProperty("identifying_number", computerSystemProduct.IdentifyingNumber),
+                                from computerSystemProduct in computerSystemProductInfoList
+                                select new JProperty("uuid", computerSystemProduct.UUID)))));
+            return data.ToString();
+        }
+
+        /// <summary>
+        /// The check for hardware changes.
+        /// </summary>
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
+        public void CheckForHardwareChanges(IVisitor visitor)
+        {
+            var changedComputerSystemList = new List<ComputerSystemInfo>();
+            var tempComputerSystemInfoList = this.GetComputerSystemValue();
+            changedComputerSystemList = tempComputerSystemInfoList.GetDifference(this.computerSystemInfoList);
+            var changedComputerSystemProductList = new List<ComputerSystemProductInfo>();
+            var tempComputerSystemProductList = this.GetComputerSystemProductValue();
+            changedComputerSystemProductList =
+                tempComputerSystemProductList.GetDifference(this.computerSystemProductInfoList);
+            if (changedComputerSystemList.Any() && changedComputerSystemProductList.Any())
             {
-                var computerSystemInfo = new ComputerSystemInfo
-                {
-                    Name = queryObject[WmiConstants.Name],
-                    Status = queryObject[WmiConstants.Status],
-                    PrimaryOwnerName = queryObject[WmiConstants.PrimaryOwnerName],
-                    SystemType = queryObject[WmiConstants.SystemType],
-                    ThermalState = queryObject[WmiConstants.ThermalState],
-                    PartOfDomain = queryObject[WmiConstants.PartOfDomain],
-                    Domain = queryObject[WmiConstants.Domain],
-                    Workgroup = queryObject[WmiConstants.Workgroup],
-                    CurrentTimeZone = queryObject[WmiConstants.CurrentTimeZone],
-                    Manufacturer = queryObject[WmiConstants.Manufacturer],
-                    Model = queryObject[WmiConstants.Model]
-                };
-                computerSystemInfo.IsPortable = this.CheckIfSystemIsLaptop();
-                computerSystemInfo.IsServer = this.CheckIfSystemIsServer();
-                computerSystemInfo.IsVirtual = this.CheckIfSystemIsVirtualMachine(
-                    computerSystemInfo.Model.ToString(),
-                    computerSystemInfo.Manufacturer.ToString());
-                computerSystemInfo.Hypervisor = this.GetHypervisorInfo(computerSystemInfo.Manufacturer.ToString());
-                this.computerSystemInfoList.Add(computerSystemInfo);
+                var data = this.ConvertComputerSystemToJson(changedComputerSystemList, changedComputerSystemProductList);
+                visitor.Visit(ComputerSystemTableName, data);
+            }
+            else if (changedComputerSystemList.Any() && !changedComputerSystemProductList.Any())
+            {
+                var data = this.ConvertComputerSystemToJson(
+                    changedComputerSystemList,
+                    new List<ComputerSystemProductInfo>());
+                visitor.Visit(ComputerSystemTableName, data);
+            }
+            else if (!changedComputerSystemList.Any() && changedComputerSystemProductList.Any())
+            {
+                var data = this.ConvertComputerSystemToJson(
+                    new List<ComputerSystemInfo>(),
+                    changedComputerSystemProductList);
+                visitor.Visit(ComputerSystemTableName, data);
             }
         }
 
@@ -182,11 +282,58 @@
         }
 
         /// <summary>
-        /// The report WMI info.
+        /// The get value.
         /// </summary>
-        public void ReportWMIInfo()
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        private List<ComputerSystemInfo> GetComputerSystemValue()
         {
-            
+            var tempList = new List<ComputerSystemInfo>();
+
+            // TODO: SystemSKUNumber is not supported before Windows 10
+            foreach (var queryObject in this.computerSystemSearcher.Get())
+            {
+                var computerSystemInfo = new ComputerSystemInfo
+                {
+                    Name = queryObject[WmiConstants.Name],
+                    Status = queryObject[WmiConstants.Status],
+                    PrimaryOwnerName = queryObject[WmiConstants.PrimaryOwnerName],
+                    SystemType = queryObject[WmiConstants.SystemType],
+                    ThermalState = queryObject[WmiConstants.ThermalState],
+                    PartOfDomain = queryObject[WmiConstants.PartOfDomain],
+                    Domain = queryObject[WmiConstants.Domain],
+                    Workgroup = queryObject[WmiConstants.Workgroup],
+                    CurrentTimeZone = queryObject[WmiConstants.CurrentTimeZone],
+                    Manufacturer = queryObject[WmiConstants.Manufacturer],
+                    Model = queryObject[WmiConstants.Model]
+                };
+                computerSystemInfo.IsPortable = this.CheckIfSystemIsLaptop();
+                computerSystemInfo.IsServer = this.CheckIfSystemIsServer();
+                computerSystemInfo.IsVirtual = this.CheckIfSystemIsVirtualMachine(
+                    computerSystemInfo.Model.ToString(),
+                    computerSystemInfo.Manufacturer.ToString());
+                computerSystemInfo.Hypervisor = this.GetHypervisorInfo(computerSystemInfo.Manufacturer.ToString());
+                tempList.Add(computerSystemInfo);
+            }
+
+            return tempList;
+        }
+
+        private List<ComputerSystemProductInfo> GetComputerSystemProductValue()
+        {
+            var tempList = new List<ComputerSystemProductInfo>();
+            foreach (var queryObject in this.computerSystemProductSearcher.Get())
+            {
+                var computerSystemProductInfo = new ComputerSystemProductInfo
+                {
+                    IdentifyingNumber = queryObject[WmiConstants.IdentifyingNumber],
+                    UUID = queryObject[WmiConstants.UUID]
+                };
+                tempList.Add(computerSystemProductInfo);
+            }
+
+            return tempList;
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿namespace PopulateRegistryInformation.Contracts
 {
+    using ReportToRestEndpoint.Contracts;
+
     /// <summary>
     /// The PopulateRegistryInfo interface.
     /// </summary>
@@ -13,7 +15,10 @@
         /// <summary>
         /// The report registry info.
         /// </summary>
-        void ReportRegistryInfo();
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
+        void ReportRegistryInfo(IVisitor visitor);
 
     }
 }

@@ -7,7 +7,11 @@
 
     using Entities;
 
+    using Helpers;
+
     using PopulateWMIInfo.Contracts;
+
+    using ReportToRestEndpoint.Contracts;
 
     /// <summary>
     /// The WMI information for printer.
@@ -47,34 +51,53 @@
         /// </summary>
         public void GetWMIInfo()
         {
-            // TODO: Manufacturer info is not available
-            foreach (var queryObject in this.searcher.Get())
-            {
-                var printerInfo = new PrinterInfo
-                                      {
-                                          Name = queryObject[WmiConstants.Name],
-                                          DriverName = queryObject[WmiConstants.DriverName],
-                                          Location = queryObject[WmiConstants.Location],
-                                          ServerName = queryObject[WmiConstants.ServerName],
-                                          VerticalResolution = queryObject[WmiConstants.VerticalResolution],
-                                          HorizontalResolution = queryObject[WmiConstants.HorizontalResolution],
-                                          Hidden = queryObject[WmiConstants.Hidden],
-                                          PortName = queryObject[WmiConstants.PortName],
-                                          Status = queryObject[WmiConstants.Status],
-                                          Shared = queryObject[WmiConstants.Shared],
-                                          Default = queryObject[WmiConstants.Default],
-                                          WorkOffline = queryObject[WmiConstants.WorkOffline]
-                                      };
-                this.printerInfoList.Add(printerInfo);
-            }    
+            this.printerInfoList = this.GetValue();
         }
 
         /// <summary>
         /// The report WMI info.
         /// </summary>
-        public void ReportWMIInfo()
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
+        public void ReportWMIInfo(IVisitor visitor)
         {
             
+        }
+
+        public void CheckForHardwareChanges()
+        {
+            var changedHardwareList = new List<PrinterInfo>();
+            var tempList = this.GetValue();
+            changedHardwareList = tempList.GetDifference(this.printerInfoList);
+        }
+
+        private List<PrinterInfo> GetValue()
+        {
+            var tempList = new List<PrinterInfo>();
+
+            // TODO: Manufacturer info is not available
+            foreach (var queryObject in this.searcher.Get())
+            {
+                var printerInfo = new PrinterInfo
+                {
+                    Name = queryObject[WmiConstants.Name],
+                    DriverName = queryObject[WmiConstants.DriverName],
+                    Location = queryObject[WmiConstants.Location],
+                    ServerName = queryObject[WmiConstants.ServerName],
+                    VerticalResolution = queryObject[WmiConstants.VerticalResolution],
+                    HorizontalResolution = queryObject[WmiConstants.HorizontalResolution],
+                    Hidden = queryObject[WmiConstants.Hidden],
+                    PortName = queryObject[WmiConstants.PortName],
+                    Status = queryObject[WmiConstants.Status],
+                    Shared = queryObject[WmiConstants.Shared],
+                    Default = queryObject[WmiConstants.Default],
+                    WorkOffline = queryObject[WmiConstants.WorkOffline]
+                };
+                tempList.Add(printerInfo);
+            }
+
+            return tempList;
         }
     }
 }

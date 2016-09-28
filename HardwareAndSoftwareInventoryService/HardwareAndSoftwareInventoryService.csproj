@@ -108,6 +108,10 @@
       <Project>{1B10F2E2-FDE9-47D3-8255-B225E3F2C32E}</Project>
       <Name>RegistryChangesMonitor</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ReportToRestEndpoint\ReportToRestEndpoint.csproj">
+      <Project>{D57955F1-3CB2-442D-8DDF-C6CC76E0B4C1}</Project>
+      <Name>ReportToRestEndpoint</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HardwareAndSoftwareInventoryService.resx">

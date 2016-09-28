@@ -1,5 +1,6 @@
 ﻿namespace Helpers
 {
+    using System.Collections.Generic;
     using System.Linq;
 
     /// <summary>
@@ -25,6 +26,39 @@
         public static bool In<T>(this T value, params T[] list)
         {
             return list.Contains(value);
+        }
+
+        /// <summary>
+        /// The get difference method for difference between two lists.
+        /// </summary>
+        /// <param name="firstList">
+        /// The first list.
+        /// </param>
+        /// <param name="secondList">
+        /// The second list.
+        /// </param>
+        /// <typeparam name="T">
+        /// </typeparam>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<T> GetDifference<T>(this List<T> firstList, List<T> secondList)
+        {
+            return firstList.Where(x => secondList.Any(y => x.Equals(y))).ToList();
+        }
+
+        /// <summary>
+        /// The get boolean value.
+        /// </summary>
+        /// <param name="input">
+        /// The input.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        public static string GetBooleanValue(bool input)
+        {
+            return input ? "TRUE" : "FALSE";
         }
     }
 }

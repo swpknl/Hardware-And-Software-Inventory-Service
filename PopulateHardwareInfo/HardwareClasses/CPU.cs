@@ -1,22 +1,34 @@
 ﻿namespace PopulateWMIInfo.Rules
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Management;
 
     using Constants;
 
     using Entities;
 
+    using Helpers;
+
+    using Newtonsoft.Json.Linq;
+
     using PopulateWMIInfo.Contracts;
+
+    using ReportToRestEndpoint.Contracts;
 
     /// <summary>
     /// The CPU WMI info.
     /// </summary>
     public class CPU : IWmiInfo
     {
+        private const string CpuTableName = "cpu";
+
+        private const string ClientCpuTableName = "x_client_cpu";
+
         private ManagementObjectSearcher searcher;
 
         private List<CPUInfo> cpuInfoList;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CPU"/> class.
         /// </summary>
@@ -48,38 +60,128 @@
         /// </summary>
         public void GetWMIInfo()
         {
-            // TODO: Model, Threadcount, NumberOfEnabledCores, SerialNumber and VirtualizationFirmwareEnabled(not present before Windows 8) 
-            // info are not present before Windows 10
-            foreach (var queryObject in this.searcher.Get())
-            {
-                var cpuInfo = new CPUInfo
-                                  {
-                                      Name = queryObject[WmiConstants.Name],
-                                      Manufacturer = queryObject[WmiConstants.Manufacturer],
-                                      Description = queryObject[WmiConstants.Description],
-                                      NumberOfCores = queryObject[WmiConstants.NumberOfCores],
-                                      NumberOfLogicalProcessors =
-                                          queryObject[WmiConstants.NumberOfLogicalProcessors],
-                                      ProcessorId = queryObject[WmiConstants.ProcessorId],
-                                      SocketDesignation = queryObject[WmiConstants.SocketDesignation],
-                                      MaxClockSpeed = queryObject[WmiConstants.MaxClockSpeed],
-                                      Voltage = queryObject[WmiConstants.CurrentVoltage],
-                                      AddressWidth = queryObject[WmiConstants.AddressWidth],
-                                      Device = queryObject[WmiConstants.DeviceID],
-                                      L2CacheSize = queryObject[WmiConstants.L2CacheSize],
-                                      L3CacheSize = queryObject[WmiConstants.L3CacheSize],
-                                      CurrentClockSpeed = queryObject[WmiConstants.CurrentClockSpeed]
-                                  };
-                this.cpuInfoList.Add(cpuInfo);
-            }
+            this.cpuInfoList = this.GetValue();
         }
 
         /// <summary>
         /// The report WMI info.
         /// </summary>
-        public void ReportWMIInfo()
+        public void ReportWMIInfo(IVisitor visitor)
         {
-            
+            string data = this.ConvertCpuInfoToJson(this.cpuInfoList);
+            visitor.Visit(CpuTableName, data);
+            data = this.ConvertClientCpuInfoToJson(this.cpuInfoList);
+            visitor.Visit(ClientCpuTableName, data);
+        }
+
+        /// <summary>
+        /// The check for hardware changes.
+        /// </summary>
+        public void CheckForHardwareChanges(IVisitor visitor)
+        {
+            var changedHardwareList = new List<CPUInfo>();
+            var tempList = this.GetValue();
+            changedHardwareList = tempList.GetDifference(this.cpuInfoList);
+            if (changedHardwareList.Any())
+            {
+                var data = this.ConvertCpuInfoToJson(changedHardwareList);
+                visitor.Visit(CpuTableName, data);
+                data = this.ConvertClientCpuInfoToJson(changedHardwareList);
+                visitor.Visit(ClientCpuTableName, data);
+            }
+        }
+
+        private List<CPUInfo> GetValue()
+        {
+            var tempList = new List<CPUInfo>();
+
+            // TODO: Model, Threadcount, NumberOfEnabledCores, SerialNumber and VirtualizationFirmwareEnabled(not present before Windows 8) 
+            // info are not present before Windows 10
+            foreach (var queryObject in this.searcher.Get())
+            {
+                var cpuInfo = new CPUInfo
+                {
+                    Name = queryObject[WmiConstants.Name],
+                    Manufacturer = queryObject[WmiConstants.Manufacturer],
+                    Description = queryObject[WmiConstants.Description],
+                    NumberOfCores = queryObject[WmiConstants.NumberOfCores],
+                    NumberOfLogicalProcessors = queryObject[WmiConstants.NumberOfLogicalProcessors],
+                    ProcessorId = queryObject[WmiConstants.ProcessorId],
+                    SocketDesignation = queryObject[WmiConstants.SocketDesignation],
+                    MaxClockSpeed = queryObject[WmiConstants.MaxClockSpeed],
+                    Voltage = queryObject[WmiConstants.CurrentVoltage],
+                    AddressWidth = queryObject[WmiConstants.AddressWidth],
+                    Device = queryObject[WmiConstants.DeviceID],
+                    L2CacheSize = queryObject[WmiConstants.L2CacheSize],
+                    L3CacheSize = queryObject[WmiConstants.L3CacheSize],
+                    CurrentClockSpeed = queryObject[WmiConstants.CurrentClockSpeed]
+                };
+                tempList.Add(cpuInfo);
+            }
+
+            return tempList;
+        }
+
+        /// <summary>
+        /// The convert cpu info to json.
+        /// </summary>
+        /// <param name="cpuInfoList">
+        /// The cpu info list.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        private string ConvertCpuInfoToJson(List<CPUInfo> cpuInfoList)
+        {
+            var data = new JObject(
+                new JProperty(
+                    "resource",
+                    new JArray(
+                        from cpuInfo in cpuInfoList
+                        select
+                            new JObject(
+                            new JProperty("name", cpuInfo.Name),
+                            new JProperty("model", cpuInfo.Model),
+                            new JProperty("cpu_group_id", cpuInfo.Description),
+                            new JProperty("thread_count", cpuInfo.ThreadCount),
+                            new JProperty("number_of_cores", cpuInfo.NumberOfCores),
+                            new JProperty("number_of_logical_processors", cpuInfo.NumberOfLogicalProcessors),
+                            new JProperty("processor_identifier", cpuInfo.ProcessorId),
+                            new JProperty("socket", cpuInfo.SocketDesignation),
+                            new JProperty("max_clock_speed_mhz", cpuInfo.MaxClockSpeed),
+                            new JProperty("voltage", cpuInfo.Voltage),
+                            new JProperty("architecture", cpuInfo.AddressWidth),
+                            new JProperty("device", cpuInfo.Device),
+                            new JProperty("l2_cache_size", cpuInfo.L2CacheSize),
+                            new JProperty("l3_cache_size", cpuInfo.L3CacheSize),
+                            new JProperty("number_of_enabled_cores", cpuInfo.NumberOfEnabledCore)))));
+            return data.ToString();
+        }
+
+        /// <summary>
+        /// The convert client cpu info to json.
+        /// </summary>
+        /// <param name="cpuInfoList">
+        /// The cpu info list.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        private string ConvertClientCpuInfoToJson(List<CPUInfo> cpuInfoList)
+        {
+            var data = new JObject(
+                new JProperty(
+                    "resource",
+                    new JArray(
+                        from cpuInfo in cpuInfoList
+                        select
+                            new JObject(
+                            new JProperty("clock_speed_mhz", cpuInfo.CurrentClockSpeed),
+                            new JProperty("serial_number", cpuInfo.SerialNumber),
+                            new JProperty(
+                            "is_virtualization_firmware_enabled",
+                            GenericExtensions.GetBooleanValue((bool)cpuInfo.VirtualizationFirmwareEnabled))))));
+            return data.ToString();
         }
     }
 }
