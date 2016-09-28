@@ -11,11 +11,40 @@
 
     using FilesWatcher.Contracts;
 
+    using Helpers;
+
+    using Logger.Contracts;
+
+    using Newtonsoft.Json.Linq;
+
+    using ReportToRestEndpoint.Contracts;
+
     /// <summary>
     /// The file system watcher.
     /// </summary>
     public class FilesSystemWatcher : IFilesWatcher
     {
+        private const string SoftwareTableName = "software";
+
+        private readonly IVisitor visitor;
+
+        private readonly ILogger logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FilesSystemWatcher"/> class.
+        /// </summary>
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
+        /// <param name="logger">
+        /// The logger.
+        /// </param>
+        public FilesSystemWatcher(IVisitor visitor, ILogger logger)
+        {
+            this.visitor = visitor;
+            this.logger = logger;
+        }
+
         /// <summary>
         /// The begin monitoring files.
         /// </summary>
@@ -36,12 +65,12 @@
                         | NotifyFilters.LastWrite | NotifyFilters.Size;
 
                     // Add event handlers.
-                    watcher.Changed += OnChanged;
-                    watcher.Created += OnChanged;
-                    watcher.Deleted += OnChanged;
-                    watcher.Renamed += OnRenamed;
+                    watcher.Changed += this.OnChanged;
+                    watcher.Created += this.OnChanged;
+                    watcher.Deleted += this.OnChanged;
+                    watcher.Renamed += this.OnRenamed;
                     
-                    Trace.WriteLine(
+                    this.logger.LogInfo(
                         "Creating the FileSystemWatcher class for the disk drive: " + hardDiskDrive
                         + " and file extenion: " + fileType);
                 }
@@ -57,14 +86,22 @@
         /// <param name="e">
         /// The file.
         /// </param>
-        private static void OnChanged(object source, FileSystemEventArgs e)
+        private void OnChanged(object source, FileSystemEventArgs e)
         {
             // Specify what is done when a file is changed, created, or deleted.
             if (!ConfigurationKeys.DirectoriesToExclude.Any(directory => e.FullPath.Contains(directory)))
             {
-                Trace.WriteLine("File system change for the file: " + e.FullPath + ". Action occured: " + e.ChangeType);
-                
-                // TODO: Handle the file changed event
+                this.logger.LogInfo("File system change for the file: " + e.FullPath + ". Action occured: " + e.ChangeType);
+                var file = new FileInfo(e.FullPath);
+                var fileSystemInfo = new FileSystemInformation
+                {
+                    FileName = file.Name,
+                    FilePath = file.FullName,
+                    Extension = file.Extension
+                };
+                fileSystemInfo.PopulateMetaData();
+                var data = this.ConvertFileSystemInfoToJson(fileSystemInfo);
+                this.visitor.Visit(SoftwareTableName, data);
             }
         }
 
@@ -77,15 +114,55 @@
         /// <param name="e">
         /// The file.
         /// </param>
-        private static void OnRenamed(object source, RenamedEventArgs e)
+        private void OnRenamed(object source, RenamedEventArgs e)
         {
             // Specify what is done when a file is renamed.
             if (!ConfigurationKeys.DirectoriesToExclude.Any(directory => e.FullPath.Contains(directory)))
             {
-                Trace.WriteLine("File rename occured from " + e.OldFullPath + " to " + e.FullPath);
-                
-                // TODO: Handle the file changed event
+                this.logger.LogInfo("File rename occured from " + e.OldFullPath + " to " + e.FullPath);
+                var file = new FileInfo(e.FullPath);
+                var fileSystemInfo = new FileSystemInformation
+                {
+                    FileName = file.Name,
+                    FilePath = file.FullName,
+                    Extension = file.Extension
+                };
+                fileSystemInfo.PopulateMetaData();
+                var data = this.ConvertFileSystemInfoToJson(fileSystemInfo);
+                this.visitor.Visit(SoftwareTableName, data);
             }
+        }
+
+        /// <summary>
+        /// The convert file system info to json.
+        /// </summary>
+        /// <param name="fileSystemInfo">
+        /// The file system info.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        private string ConvertFileSystemInfoToJson(FileSystemInformation fileSystemInfo)
+        {
+            var data =
+                new JObject(
+                    new JProperty(
+                        "resources",
+                        new JArray(
+                                new JObject(
+                                new JProperty("executable_path", fileSystemInfo.FilePath),
+                                new JProperty("md5", fileSystemInfo.Md5),
+                                new JProperty("product_desc", fileSystemInfo.Description),
+                                new JProperty("product_name", fileSystemInfo.ProductName),
+                                new JProperty("file_version", fileSystemInfo.FileVersion),
+                                new JProperty("manufacturer", fileSystemInfo.Manufacturer),
+                                new JProperty("executable_file", fileSystemInfo.FileName),
+                                new JProperty("trademark", fileSystemInfo.TradeMark),
+                                new JProperty("executable_extention", fileSystemInfo.Extension),
+                                new JProperty("size", fileSystemInfo.FileSize),
+                                new JProperty("os_type", 1),
+                                new JProperty("is_registry", "FALSE")))));
+            return data.ToString();
         }
     }
 }

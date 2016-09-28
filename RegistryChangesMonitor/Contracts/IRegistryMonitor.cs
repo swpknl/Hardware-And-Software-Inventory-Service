@@ -1,5 +1,7 @@
 ﻿namespace RegistryChangesMonitor.Contracts
 {
+    using ReportToRestEndpoint.Contracts;
+
     /// <summary>
     /// The RegistryMonitor interface.
     /// </summary>
@@ -18,6 +20,9 @@
         /// <summary>
         /// The report registry changes.
         /// </summary>
-        void ReportRegistryChanges();
+        /// <param name="data">
+        /// The data.
+        /// </param>
+        void ReportRegistryChanges(string data);
     }
 }

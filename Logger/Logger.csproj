@@ -42,7 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Contracts\ILogger.cs" />
-    <Compile Include="Impl\WindowsEventLogger.cs" />
+    <Compile Include="Impl\TraceLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

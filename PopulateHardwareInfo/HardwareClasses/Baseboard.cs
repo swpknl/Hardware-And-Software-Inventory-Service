@@ -1,5 +1,6 @@
 ﻿namespace PopulateWMIInfo.Rules
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
@@ -102,22 +103,30 @@
         private List<BaseboardInfo> GetValue()
         {
             var tempList = new List<BaseboardInfo>();
-            foreach (var queryObj in this.searcher.Get())
+            try
             {
-                var baseboardInfo = new BaseboardInfo
+                foreach (var queryObj in this.searcher.Get())
                 {
-                    Product = queryObj[WmiConstants.Product],
-                    Manufacturer = queryObj[WmiConstants.Manufacturer],
-                    HotSwappable = queryObj[WmiConstants.HotSwappable],
-                    HostingBoard = queryObj[WmiConstants.HostingBoard],
-                    Removable = queryObj[WmiConstants.Removable],
-                    Replaceable = queryObj[WmiConstants.Replaceable],
-                    RequiresDaughterBoard = queryObj[WmiConstants.RequiresDaughterBoard],
-                    Version = queryObj[WmiConstants.Version],
-                    SerialNumber = queryObj[WmiConstants.SerialNumber]
-                };
-                tempList.Add(baseboardInfo);
+                    var baseboardInfo = new BaseboardInfo
+                    {
+                        Product = queryObj[WmiConstants.Product],
+                        Manufacturer = queryObj[WmiConstants.Manufacturer],
+                        HotSwappable = queryObj[WmiConstants.HotSwappable],
+                        HostingBoard = queryObj[WmiConstants.HostingBoard],
+                        Removable = queryObj[WmiConstants.Removable],
+                        Replaceable = queryObj[WmiConstants.Replaceable],
+                        RequiresDaughterBoard = queryObj[WmiConstants.RequiresDaughterBoard],
+                        Version = queryObj[WmiConstants.Version],
+                        SerialNumber = queryObj[WmiConstants.SerialNumber]
+                    };
+                    tempList.Add(baseboardInfo);
+                }
             }
+            catch (Exception)
+            {
+                throw;
+            }
+            
 
             return tempList;
         }

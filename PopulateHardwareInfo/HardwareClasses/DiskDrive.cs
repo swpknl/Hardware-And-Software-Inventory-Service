@@ -1,5 +1,6 @@
 ﻿namespace PopulateWMIInfo.Rules
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
@@ -97,21 +98,28 @@
             var tempList = new List<DiskdriveInfo>();
 
             // TODO: Disk drive and Manufacturer are not available
-            foreach (var queryObject in this.searcher.Get())
+            try
             {
-                var diskDriveInfo = new DiskdriveInfo
+                foreach (var queryObject in this.searcher.Get())
                 {
-                    Name = queryObject[WmiConstants.Name],
-                    Model = queryObject[WmiConstants.Model],
-                    InterfaceType = queryObject[WmiConstants.InterfaceType],
-                    Size = queryObject[WmiConstants.Size],
-                    MediaType = queryObject[WmiConstants.MediaType],
-                    FirmwareRevisions = queryObject[WmiConstants.FirmwareRevision],
-                    Partitions = queryObject[WmiConstants.Partitions],
-                    SerialNumber = queryObject[WmiConstants.SerialNumber]
-                };
+                    var diskDriveInfo = new DiskdriveInfo
+                    {
+                        Name = queryObject[WmiConstants.Name],
+                        Model = queryObject[WmiConstants.Model],
+                        InterfaceType = queryObject[WmiConstants.InterfaceType],
+                        Size = queryObject[WmiConstants.Size],
+                        MediaType = queryObject[WmiConstants.MediaType],
+                        FirmwareRevisions = queryObject[WmiConstants.FirmwareRevision],
+                        Partitions = queryObject[WmiConstants.Partitions],
+                        SerialNumber = queryObject[WmiConstants.SerialNumber]
+                    };
 
-                tempList.Add(diskDriveInfo);
+                    tempList.Add(diskDriveInfo);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
             }
 
             return tempList;

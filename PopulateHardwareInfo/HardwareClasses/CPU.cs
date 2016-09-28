@@ -1,5 +1,6 @@
 ﻿namespace PopulateWMIInfo.Rules
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
@@ -97,28 +98,35 @@
 
             // TODO: Model, Threadcount, NumberOfEnabledCores, SerialNumber and VirtualizationFirmwareEnabled(not present before Windows 8) 
             // info are not present before Windows 10
-            foreach (var queryObject in this.searcher.Get())
+            try
             {
-                var cpuInfo = new CPUInfo
+                foreach (var queryObject in this.searcher.Get())
                 {
-                    Name = queryObject[WmiConstants.Name],
-                    Manufacturer = queryObject[WmiConstants.Manufacturer],
-                    Description = queryObject[WmiConstants.Description],
-                    NumberOfCores = queryObject[WmiConstants.NumberOfCores],
-                    NumberOfLogicalProcessors = queryObject[WmiConstants.NumberOfLogicalProcessors],
-                    ProcessorId = queryObject[WmiConstants.ProcessorId],
-                    SocketDesignation = queryObject[WmiConstants.SocketDesignation],
-                    MaxClockSpeed = queryObject[WmiConstants.MaxClockSpeed],
-                    Voltage = queryObject[WmiConstants.CurrentVoltage],
-                    AddressWidth = queryObject[WmiConstants.AddressWidth],
-                    Device = queryObject[WmiConstants.DeviceID],
-                    L2CacheSize = queryObject[WmiConstants.L2CacheSize],
-                    L3CacheSize = queryObject[WmiConstants.L3CacheSize],
-                    CurrentClockSpeed = queryObject[WmiConstants.CurrentClockSpeed]
-                };
-                tempList.Add(cpuInfo);
+                    var cpuInfo = new CPUInfo
+                    {
+                        Name = queryObject[WmiConstants.Name],
+                        Manufacturer = queryObject[WmiConstants.Manufacturer],
+                        Description = queryObject[WmiConstants.Description],
+                        NumberOfCores = queryObject[WmiConstants.NumberOfCores],
+                        NumberOfLogicalProcessors = queryObject[WmiConstants.NumberOfLogicalProcessors],
+                        ProcessorId = queryObject[WmiConstants.ProcessorId],
+                        SocketDesignation = queryObject[WmiConstants.SocketDesignation],
+                        MaxClockSpeed = queryObject[WmiConstants.MaxClockSpeed],
+                        Voltage = queryObject[WmiConstants.CurrentVoltage],
+                        AddressWidth = queryObject[WmiConstants.AddressWidth],
+                        Device = queryObject[WmiConstants.DeviceID],
+                        L2CacheSize = queryObject[WmiConstants.L2CacheSize],
+                        L3CacheSize = queryObject[WmiConstants.L3CacheSize],
+                        CurrentClockSpeed = queryObject[WmiConstants.CurrentClockSpeed]
+                    };
+                    tempList.Add(cpuInfo);
+                }
             }
-
+            catch (Exception)
+            {
+                throw;
+            }
+            
             return tempList;
         }
 

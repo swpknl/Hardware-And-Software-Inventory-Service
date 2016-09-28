@@ -1,5 +1,6 @@
 ﻿namespace PopulateWMIInfo.Rules
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
@@ -94,20 +95,27 @@
             var tempList = new List<BIOSInfo>();
 
             // TODO: SystemBIOSMajorVersion and SystemBiosMinorVersion are not present before Windows 10
-            foreach (var queryObj in this.searcher.Get())
+            try
             {
-                var biosInfo = new BIOSInfo
+                foreach (var queryObj in this.searcher.Get())
                 {
-                    Manufacturer = queryObj[WmiConstants.Manufacturer],
-                    Version = queryObj[WmiConstants.Version],
-                    SMBIOSBIOSVersion = queryObj[WmiConstants.SMBIOSBIOSVersion],
-                    SMBIOSMajorVersion = queryObj[WmiConstants.SMBIOSMajorVersion],
-                    SMBIOSMinorVersion = queryObj[WmiConstants.SMBIOSMinorVersion],
-                    ReleaseDate = queryObj[WmiConstants.ReleaseDate],
-                    SerialNumber = queryObj[WmiConstants.SerialNumber]
-                };
+                    var biosInfo = new BIOSInfo
+                    {
+                        Manufacturer = queryObj[WmiConstants.Manufacturer],
+                        Version = queryObj[WmiConstants.Version],
+                        SMBIOSBIOSVersion = queryObj[WmiConstants.SMBIOSBIOSVersion],
+                        SMBIOSMajorVersion = queryObj[WmiConstants.SMBIOSMajorVersion],
+                        SMBIOSMinorVersion = queryObj[WmiConstants.SMBIOSMinorVersion],
+                        ReleaseDate = queryObj[WmiConstants.ReleaseDate],
+                        SerialNumber = queryObj[WmiConstants.SerialNumber]
+                    };
 
-                tempList.Add(biosInfo);
+                    tempList.Add(biosInfo);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
             }
 
             return tempList;

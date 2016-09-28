@@ -2,6 +2,8 @@
 {
     using System;
 
+    using Logger.Contracts;
+
     /// <summary>
     /// The configuration manager.
     /// </summary>

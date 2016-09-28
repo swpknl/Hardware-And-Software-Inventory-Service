@@ -2,7 +2,11 @@
 {
     using Constants;
 
+    using Logger.Contracts;
+
     using RegistryChangesMonitor.Contracts;
+
+    using ReportToRestEndpoint.Contracts;
 
     /// <summary>
     /// The WOW6432Node registry monitor.
@@ -12,7 +16,8 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="Wow6432NodeRegistryMonitor"/> class.
         /// </summary>
-        public Wow6432NodeRegistryMonitor() : base(RegistryKeyConstants.HKEY_LOCAL_MACHINE, RegistryKeyConstants.Wow6432Node)
+        public Wow6432NodeRegistryMonitor(ILogger logger, IVisitor visitor) 
+            : base(RegistryKeyConstants.HKEY_LOCAL_MACHINE, RegistryKeyConstants.Wow6432Node, logger, visitor)
         {
             
         }

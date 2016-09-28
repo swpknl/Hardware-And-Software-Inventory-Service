@@ -15,7 +15,9 @@
     /// </summary>
     public class RestApiVisitor : IVisitor
     {
-        private string baseUrl = @"http://sams.northeurope.cloudapp.azure.com/api/v2/samnet/_table/{0}";
+        private string databaseUrl = @"http://sams.northeurope.cloudapp.azure.com/api/v2/samnet/_table/{0}";
+
+        private string authenticationUrl = @"http://sams.northeurope.cloudapp.azure.com/api/v2/user/session";
 
         private ILogger logger;
 
@@ -41,9 +43,9 @@
         /// </param>
         public void Visit(string tableName, string data)
         {
-            var url = string.Format(this.baseUrl, tableName);
+            Authenticate();
+            var url = string.Format(this.databaseUrl, tableName);
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.Credentials = new NetworkCredential(ConfigurationKeys.DbUserName, ConfigurationKeys.DbPassword);
             request.Method = "POST";
             request.ContentType = "text/plain;charset=utf-8";
             System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
@@ -61,11 +63,45 @@
                 Stream webStream = webResponse.GetResponseStream();
                 StreamReader responseReader = new StreamReader(webStream);
                 string response = responseReader.ReadToEnd();
+                this.logger.LogInfo("Call made successfully for table " + tableName);
                 responseReader.Close();
             }
             catch (Exception ex)
             {
-                this.logger.LogException("An exception occured while making the REST API call", ex);
+                this.logger.LogException("An exception occured while making the REST API call for the table "+tableName, ex);
+            }
+        }
+
+        /// <summary>
+        /// The authenticate.
+        /// </summary>
+        private void Authenticate()
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(this.authenticationUrl);
+            request.Method = "POST";
+            request.ContentType = "text/plain;charset=utf-8";
+            System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+            var data = "{ \"email\": \"\"" + ConfigurationKeys.DbUserName + "\"\", \"password\": \"\"" + ConfigurationKeys.DbPassword + "\"\", \"remember_me\": \"false\" }";
+            var bytes = encoding.GetBytes(data);
+            request.ContentLength = bytes.Length;
+            using (Stream requestStream = request.GetRequestStream())
+            {
+                // Send the data.
+                requestStream.Write(bytes, 0, bytes.Length);
+            }
+
+            try
+            {
+                WebResponse webResponse = request.GetResponse();
+                Stream webStream = webResponse.GetResponseStream();
+                StreamReader responseReader = new StreamReader(webStream);
+                string response = responseReader.ReadToEnd();
+                this.logger.LogInfo("Authenticated successfully for user " + ConfigurationKeys.DbUserName);
+                responseReader.Close();
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogException("An exception occured while making the REST API call for the user " + ConfigurationKeys.DbUserName, ex);
             }
         }
     }

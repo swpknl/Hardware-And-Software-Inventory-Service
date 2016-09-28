@@ -15,6 +15,8 @@
 
     using Logger.Contracts;
 
+    using Newtonsoft.Json.Linq;
+
     using ReportToRestEndpoint.Contracts;
 
     /// <summary>
@@ -22,6 +24,8 @@
     /// </summary>
     public class PopulateFileSystem : IPopulateFileSystem
     {
+        private const string SoftwareTableName = "software";
+
         private readonly ILogger logger;
 
         private readonly List<FileSystemInformation> fileSystemInformationList;
@@ -94,7 +98,39 @@
         /// </param>
         public void ReportFilesInfo(IVisitor visitor)
         {
-            
+            var data = this.ConvertFilesInfoToJson();
+            visitor.Visit(SoftwareTableName, data);
+        }
+
+        /// <summary>
+        /// The convert files info to json.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        private string ConvertFilesInfoToJson()
+        {
+            var data =
+                new JObject(
+                    new JProperty(
+                        "resources",
+                        new JArray(
+                            from fileSystemInfo in this.fileSystemInformationList
+                            select
+                                new JObject(
+                                new JProperty("executable_path", fileSystemInfo.FilePath),
+                                new JProperty("md5", fileSystemInfo.Md5),
+                                new JProperty("product_desc", fileSystemInfo.Description),
+                                new JProperty("product_name", fileSystemInfo.ProductName),
+                                new JProperty("file_version", fileSystemInfo.FileVersion),
+                                new JProperty("manufacturer", fileSystemInfo.Manufacturer),
+                                new JProperty("executable_file", fileSystemInfo.FileName),
+                                new JProperty("trademark", fileSystemInfo.TradeMark),
+                                new JProperty("executable_extention", fileSystemInfo.Extension),
+                                new JProperty("size", fileSystemInfo.FileSize),
+                                new JProperty("os_type", 1),
+                                new JProperty("is_registry", "FALSE")))));
+            return data.ToString();
         }
     }
 }

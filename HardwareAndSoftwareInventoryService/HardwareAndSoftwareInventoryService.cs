@@ -23,6 +23,8 @@
 
     using RegistryChangesMonitor.Contracts;
 
+    using ReportToRestEndpoint.Contracts;
+
     /// <summary>
     /// The hardware and software inventory service.
     /// </summary>
@@ -40,7 +42,7 @@
         static HardwareAndSoftwareInventoryService()
         {
             // TODO: Remove this when pushing in production
-            // System.Diagnostics.Debugger.Launch();
+            System.Diagnostics.Debugger.Launch();
             ConfigurationKeys.DbUserName = Helpers.ConfigurationManager.TryGetConfigurationValue(ConfigurationKeysConstants.DbUsername);
             ConfigurationKeys.DbPassword = Helpers.ConfigurationManager.TryGetConfigurationValue(ConfigurationKeysConstants.DbPassword);
             ConfigurationKeys.DirectoriesToExclude =
@@ -88,6 +90,7 @@
             System.Diagnostics.Debugger.Launch();
             
             Task.Factory.StartNew(() => this.container.Resolve<IPopulateFileSystem>().PopulateFiles())
+                .ContinueWith((antecedent) => this.container.Resolve<IPopulateFileSystem>().ReportFilesInfo(this.container.Resolve<IVisitor>()))
                 .ContinueWith((antecedent) => this.container.Resolve<IFilesWatcher>().BeginMonitoringFiles());
             Task.Factory.StartNew(() => this.container.Resolve<IPopulateWMIInfoFacade>().PopulateWMIInfo());
             Task.Factory.StartNew(() => this.container.Resolve<IPopulateRegistryInfoFacade>().PopulateRegistryInformation())
@@ -124,7 +127,7 @@
             var currentTime = new CurrentSystemTime().GetCurrentSystemTime();
             if (Helpers.TimeSpanHelper.IsCurrentTimeEqualToReportingTime(currentTime))
             {
-                // Make REST API call
+                this.container.Resolve<IPopulateWMIInfoFacade>().CheckForHardwareChanges();
             }
         }
     }

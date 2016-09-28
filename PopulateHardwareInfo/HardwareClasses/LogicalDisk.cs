@@ -1,5 +1,6 @@
 ﻿namespace PopulateWMIInfo.Rules
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
@@ -18,6 +19,10 @@
 
     public class LogicalDisk : IWmiInfo
     {
+        private const string LogicalDrivesInfoTableName = "logical_disk";
+
+        private const string LogicalDrivesInfoClientTableName = "x_client_table_name";
+
         private ManagementObjectSearcher searcher;
 
         private List<LogicalDrivesInfo> logicalDrivesInfoList;
@@ -50,35 +55,7 @@
         /// </summary>
         public void GetWMIInfo()
         {
-            this.logicalDrivesInfoList = this.GetLogicalDrivesInfos();
-        }
-
-        private List<LogicalDrivesInfo> GetLogicalDrivesInfos()
-        {
-            var tempList = new List<LogicalDrivesInfo>();
-            foreach (var queryObject in this.searcher.Get())
-            {
-                var logicalDrivesInfo = new LogicalDrivesInfo
-                                            {
-                                                Name = queryObject[WmiConstants.Name],
-                                                Description = queryObject[WmiConstants.Description],
-                                                FileSystem = queryObject[WmiConstants.FileSystem],
-                                                Size = queryObject[WmiConstants.Size],
-                                                ProviderName = queryObject[WmiConstants.ProviderName],
-                                                SupportsFileCompression =
-                                                    queryObject[WmiConstants.SupportsFileBasedCompression],
-                                                SupportsDiskQuotas =
-                                                    queryObject[WmiConstants.SupportsDiskQuotas],
-                                                FreeSpace = queryObject[WmiConstants.FreeSpace],
-                                                Compressed = queryObject[WmiConstants.Compressed],
-                                                VolumeSerialNumber =
-                                                    queryObject[WmiConstants.VolumeSerialNumber],
-                                                VolumeName = queryObject[WmiConstants.VolumeName]
-                                            };
-                tempList.Add(logicalDrivesInfo);
-            }
-
-            return tempList;
+            this.logicalDrivesInfoList = this.GetLogicalDrivesInfo();
         }
 
         /// <summary>
@@ -89,19 +66,82 @@
         /// </param>
         public void ReportWMIInfo(IVisitor visitor)
         {
-            
+            var data = this.ConvertLogicalDrivesInfoToJson(this.logicalDrivesInfoList);
+            visitor.Visit(LogicalDrivesInfoTableName, data);
+            data = this.ConvertClientLogicalDrivesInfoToJson(this.logicalDrivesInfoList);
+            visitor.Visit(LogicalDrivesInfoClientTableName, data);
         }
 
         /// <summary>
         /// The check for hardware changes.
         /// </summary>
+        /// <param name="visitor">
+        /// The visitor.
+        /// </param>
         public void CheckForHardwareChanges(IVisitor visitor)
         {
             var changedHardwareList = new List<LogicalDrivesInfo>();
-            var tempList = this.GetLogicalDrivesInfos();
+            var tempList = this.GetLogicalDrivesInfo();
             changedHardwareList = tempList.GetDifference(this.logicalDrivesInfoList);
+            if (changedHardwareList.Any())
+            {
+                var data = this.ConvertLogicalDrivesInfoToJson(changedHardwareList);
+                visitor.Visit(LogicalDrivesInfoTableName, data);
+                data = this.ConvertClientLogicalDrivesInfoToJson(changedHardwareList);
+                visitor.Visit(LogicalDrivesInfoClientTableName, data);
+            }
         }
 
+        /// <summary>
+        /// The get logical drives info.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        private List<LogicalDrivesInfo> GetLogicalDrivesInfo()
+        {
+            var tempList = new List<LogicalDrivesInfo>();
+            try
+            {
+                foreach (var queryObject in this.searcher.Get())
+                {
+                    var logicalDrivesInfo = new LogicalDrivesInfo
+                    {
+                        Name = queryObject[WmiConstants.Name],
+                        Description = queryObject[WmiConstants.Description],
+                        FileSystem = queryObject[WmiConstants.FileSystem],
+                        Size = queryObject[WmiConstants.Size],
+                        ProviderName = queryObject[WmiConstants.ProviderName],
+                        SupportsFileCompression =
+                                                        queryObject[WmiConstants.SupportsFileBasedCompression],
+                        SupportsDiskQuotas =
+                                                        queryObject[WmiConstants.SupportsDiskQuotas],
+                        FreeSpace = queryObject[WmiConstants.FreeSpace],
+                        Compressed = queryObject[WmiConstants.Compressed],
+                        VolumeSerialNumber =
+                                                        queryObject[WmiConstants.VolumeSerialNumber],
+                        VolumeName = queryObject[WmiConstants.VolumeName]
+                    };
+                    tempList.Add(logicalDrivesInfo);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            return tempList;
+        }
+
+        /// <summary>
+        /// The convert logical drives info to json.
+        /// </summary>
+        /// <param name="logicalDrivesInfoList">
+        /// The logical drives info list.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
         private string ConvertLogicalDrivesInfoToJson(List<LogicalDrivesInfo> logicalDrivesInfoList)
         {
             var data = new JObject(
@@ -109,9 +149,42 @@
                     "resources",
                     new JArray(
                         from logicalDrivesInfo in logicalDrivesInfoList
-                        select 
-                        new JObject(
-                            new JProperty()))))
+                        select
+                            new JObject(
+                            new JProperty("name", logicalDrivesInfo.Name),
+                            new JProperty("file_system", logicalDrivesInfo.FileSystem),
+                            new JProperty("total_size", logicalDrivesInfo.Size),
+                            new JProperty("provider_name", logicalDrivesInfo.ProviderName),
+                            new JProperty("supports_file_compression", GenericExtensions.GetBooleanValue((bool)logicalDrivesInfo.SupportsFileCompression)),
+                            new JProperty("support_disk_quotas", GenericExtensions.GetBooleanValue((bool)logicalDrivesInfo.SupportsDiskQuotas))))));
+            return data.ToString();
+        }
+
+        /// <summary>
+        /// The convert client logical drives info to json.
+        /// </summary>
+        /// <param name="logicalDrivesInfoList">
+        /// The logical drives info list.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        private string ConvertClientLogicalDrivesInfoToJson(List<LogicalDrivesInfo> logicalDrivesInfoList)
+        {
+            var data = new JObject(
+                new JProperty(
+                    "resources",
+                    new JArray(
+                        from logicalDrivesInfo in logicalDrivesInfoList
+                        select
+                            new JObject(
+                            new JProperty("free_space", logicalDrivesInfo.FreeSpace),
+                            new JProperty(
+                            "is_compressed",
+                            GenericExtensions.GetBooleanValue((bool)logicalDrivesInfo.Compressed)),
+                            new JProperty("volume_serial_number", logicalDrivesInfo.VolumeSerialNumber),
+                            new JProperty("volume_name", logicalDrivesInfo.VolumeName)))));
+            return data.ToString();
         }
     }
 }

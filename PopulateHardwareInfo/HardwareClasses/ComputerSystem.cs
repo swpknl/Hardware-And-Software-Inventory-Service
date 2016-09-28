@@ -1,5 +1,6 @@
 ﻿namespace PopulateWMIInfo.Rules
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
@@ -292,47 +293,60 @@
             var tempList = new List<ComputerSystemInfo>();
 
             // TODO: SystemSKUNumber is not supported before Windows 10
-            foreach (var queryObject in this.computerSystemSearcher.Get())
+            try
             {
-                var computerSystemInfo = new ComputerSystemInfo
+                foreach (var queryObject in this.computerSystemSearcher.Get())
                 {
-                    Name = queryObject[WmiConstants.Name],
-                    Status = queryObject[WmiConstants.Status],
-                    PrimaryOwnerName = queryObject[WmiConstants.PrimaryOwnerName],
-                    SystemType = queryObject[WmiConstants.SystemType],
-                    ThermalState = queryObject[WmiConstants.ThermalState],
-                    PartOfDomain = queryObject[WmiConstants.PartOfDomain],
-                    Domain = queryObject[WmiConstants.Domain],
-                    Workgroup = queryObject[WmiConstants.Workgroup],
-                    CurrentTimeZone = queryObject[WmiConstants.CurrentTimeZone],
-                    Manufacturer = queryObject[WmiConstants.Manufacturer],
-                    Model = queryObject[WmiConstants.Model]
-                };
-                computerSystemInfo.IsPortable = this.CheckIfSystemIsLaptop();
-                computerSystemInfo.IsServer = this.CheckIfSystemIsServer();
-                computerSystemInfo.IsVirtual = this.CheckIfSystemIsVirtualMachine(
-                    computerSystemInfo.Model.ToString(),
-                    computerSystemInfo.Manufacturer.ToString());
-                computerSystemInfo.Hypervisor = this.GetHypervisorInfo(computerSystemInfo.Manufacturer.ToString());
-                tempList.Add(computerSystemInfo);
-            }
+                    var computerSystemInfo = new ComputerSystemInfo
+                    {
+                        Name = queryObject[WmiConstants.Name],
+                        Status = queryObject[WmiConstants.Status],
+                        PrimaryOwnerName = queryObject[WmiConstants.PrimaryOwnerName],
+                        SystemType = queryObject[WmiConstants.SystemType],
+                        ThermalState = queryObject[WmiConstants.ThermalState],
+                        PartOfDomain = queryObject[WmiConstants.PartOfDomain],
+                        Domain = queryObject[WmiConstants.Domain],
+                        Workgroup = queryObject[WmiConstants.Workgroup],
+                        CurrentTimeZone = queryObject[WmiConstants.CurrentTimeZone],
+                        Manufacturer = queryObject[WmiConstants.Manufacturer],
+                        Model = queryObject[WmiConstants.Model]
+                    };
+                    computerSystemInfo.IsPortable = this.CheckIfSystemIsLaptop();
+                    computerSystemInfo.IsServer = this.CheckIfSystemIsServer();
+                    computerSystemInfo.IsVirtual = this.CheckIfSystemIsVirtualMachine(
+                        computerSystemInfo.Model.ToString(),
+                        computerSystemInfo.Manufacturer.ToString());
+                    computerSystemInfo.Hypervisor = this.GetHypervisorInfo(computerSystemInfo.Manufacturer.ToString());
+                    tempList.Add(computerSystemInfo);
+                }
 
-            return tempList;
+                return tempList;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         private List<ComputerSystemProductInfo> GetComputerSystemProductValue()
         {
             var tempList = new List<ComputerSystemProductInfo>();
-            foreach (var queryObject in this.computerSystemProductSearcher.Get())
+            try
             {
-                var computerSystemProductInfo = new ComputerSystemProductInfo
+                foreach (var queryObject in this.computerSystemProductSearcher.Get())
                 {
-                    IdentifyingNumber = queryObject[WmiConstants.IdentifyingNumber],
-                    UUID = queryObject[WmiConstants.UUID]
-                };
-                tempList.Add(computerSystemProductInfo);
+                    var computerSystemProductInfo = new ComputerSystemProductInfo
+                    {
+                        IdentifyingNumber = queryObject[WmiConstants.IdentifyingNumber],
+                        UUID = queryObject[WmiConstants.UUID]
+                    };
+                    tempList.Add(computerSystemProductInfo);
+                }
             }
-
+            catch (Exception)
+            {
+                throw;
+            }
             return tempList;
         }
     }

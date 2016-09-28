@@ -58,7 +58,6 @@
     <Compile Include="HardwareClasses\Partition.cs" />
     <Compile Include="HardwareClasses\PortConnector.cs" />
     <Compile Include="HardwareClasses\Printer.cs" />
-    <Compile Include="HardwareClasses\SoftwareLicensingService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Constants\Constants.csproj">
@@ -72,6 +71,10 @@
     <ProjectReference Include="..\Helpers\Helpers.csproj">
       <Project>{197a7296-7be5-462f-8029-ca8fbc5f1751}</Project>
       <Name>Helpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Logger\Logger.csproj">
+      <Project>{A587D1F5-F345-4086-9658-52217153927D}</Project>
+      <Name>Logger</Name>
     </ProjectReference>
     <ProjectReference Include="..\ReportToRestEndpoint\ReportToRestEndpoint.csproj">
       <Project>{D57955F1-3CB2-442D-8DDF-C6CC76E0B4C1}</Project>

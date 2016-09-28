@@ -9,5 +9,10 @@
         /// Contract for populating hardware info.
         /// </summary>
         void PopulateWMIInfo();
+
+        /// <summary>
+        /// The check for hardware changes.
+        /// </summary>
+        void CheckForHardwareChanges();
     }
 }

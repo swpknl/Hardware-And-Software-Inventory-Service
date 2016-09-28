@@ -65,6 +65,10 @@
       <Project>{6D5A6142-18C8-441A-A672-E5D319DD64C2}</Project>
       <Name>Entities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Logger\Logger.csproj">
+      <Project>{A587D1F5-F345-4086-9658-52217153927D}</Project>
+      <Name>Logger</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
