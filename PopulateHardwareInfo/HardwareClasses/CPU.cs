@@ -1,4 +1,4 @@
-﻿namespace PopulateWMIInfo.Rules
+﻿namespace PopulateWMIInfo.HardwareClasses
 {
     using System;
     using System.Collections.Generic;
@@ -29,6 +29,8 @@
         private ManagementObjectSearcher searcher;
 
         private List<CPUInfo> cpuInfoList;
+
+        private int id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CPU"/> class.
@@ -70,9 +72,10 @@
         public void ReportWMIInfo(IVisitor visitor)
         {
             string data = this.ConvertCpuInfoToJson(this.cpuInfoList);
-            visitor.Visit(CpuTableName, data);
+            visitor.Visit(CpuTableName, data, out this.id);
             data = this.ConvertClientCpuInfoToJson(this.cpuInfoList);
-            visitor.Visit(ClientCpuTableName, data);
+            int temp;
+            visitor.Visit(ClientCpuTableName, data, out temp);
         }
 
         /// <summary>
@@ -86,9 +89,10 @@
             if (changedHardwareList.Any())
             {
                 var data = this.ConvertCpuInfoToJson(changedHardwareList);
-                visitor.Visit(CpuTableName, data);
+                visitor.Visit(CpuTableName, data, out this.id);
                 data = this.ConvertClientCpuInfoToJson(changedHardwareList);
-                visitor.Visit(ClientCpuTableName, data);
+                int temp;
+                visitor.Visit(ClientCpuTableName, data, out temp);
             }
         }
 
@@ -150,7 +154,8 @@
                             new JObject(
                             new JProperty("name", cpuInfo.Name),
                             new JProperty("model", cpuInfo.Model),
-                            new JProperty("cpu_group_id", cpuInfo.Description),
+
+                            // new JProperty("cpu_group_id", cpuInfo.Description), // Commenting as description cannot be parsed to int
                             new JProperty("thread_count", cpuInfo.ThreadCount),
                             new JProperty("number_of_cores", cpuInfo.NumberOfCores),
                             new JProperty("number_of_logical_processors", cpuInfo.NumberOfLogicalProcessors),
@@ -187,8 +192,9 @@
                             new JProperty("clock_speed_mhz", cpuInfo.CurrentClockSpeed),
                             new JProperty("serial_number", cpuInfo.SerialNumber),
                             new JProperty(
-                            "is_virtualization_firmware_enabled",
-                            GenericExtensions.GetBooleanValue((bool)cpuInfo.VirtualizationFirmwareEnabled))))));
+                            "is_virtualization_firmware_enabled", GenericExtensions.GetBooleanValue(cpuInfo.VirtualizationFirmwareEnabled)),
+                            new JProperty("client_id", ClientId.Id),
+                            new JProperty("cpu_id", this.id)))));
             return data.ToString();
         }
     }

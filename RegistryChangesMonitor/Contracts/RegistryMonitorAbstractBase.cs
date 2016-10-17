@@ -84,7 +84,8 @@
         /// </param>
         public void ReportRegistryChanges(string data)
         {
-            this.visitor.Visit(TableName, data);
+            int temp;
+            this.visitor.Visit(TableName, data, out temp);
         }
 
         /// <summary>
@@ -202,7 +203,7 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from registryInfo in registryInfoList
                         select

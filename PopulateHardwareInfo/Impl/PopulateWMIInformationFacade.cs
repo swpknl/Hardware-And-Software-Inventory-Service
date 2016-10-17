@@ -2,15 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
 
     using Logger.Contracts;
 
     using PopulateWMIInfo.Contracts;
-    using PopulateWMIInfo.Rules;
+    using PopulateWMIInfo.HardwareClasses;
 
     using ReportToRestEndpoint.Contracts;
-
-    using OperatingSystem = PopulateWMIInfo.Rules.OperatingSystem;
 
     /// <summary>
     /// Class for populating hardware information.
@@ -33,13 +32,13 @@
         {
             this.wmiInfoList = new List<IWmiInfo>()
                                  {
+                                     new ComputerSystem(),
                                      new Baseboard(),
                                      new BIOS(),
-                                     new ComputerSystem(),
                                      new CPU(),
                                      new DiskDrive(),
                                      new LogicalDisk(),
-                                     new OperatingSystem(),
+                                     new PopulateWMIInfo.HardwareClasses.OperatingSystem(),
                                      new Partition(),
                                      new PortConnector(),
                                      new Printer(),

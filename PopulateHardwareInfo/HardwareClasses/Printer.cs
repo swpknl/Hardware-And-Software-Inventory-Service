@@ -1,4 +1,4 @@
-﻿namespace PopulateWMIInfo.Rules
+﻿namespace PopulateWMIInfo.HardwareClasses
 {
     using System;
     using System.Collections.Generic;
@@ -29,6 +29,8 @@
         private ManagementObjectSearcher searcher;
 
         private List<PrinterInfo> printerInfoList;
+
+        private int id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Printer"/> class.
@@ -71,9 +73,10 @@
         public void ReportWMIInfo(IVisitor visitor)
         {
             var data = this.ConvertPrinterInfoToJson(this.printerInfoList);
-            visitor.Visit(PrinterTableName, data);
+            visitor.Visit(PrinterTableName, data, out id);
             data = this.ConvertClientPrinterInfoToJson(this.printerInfoList);
-            visitor.Visit(ClientPrinterTableName, data);
+            int temp;
+            visitor.Visit(ClientPrinterTableName, data, out temp);
         }
 
         /// <summary>
@@ -90,9 +93,10 @@
             if (changedHardwareList.Any())
             {
                 var data = this.ConvertPrinterInfoToJson(changedHardwareList);
-                visitor.Visit(PrinterTableName, data);
+                visitor.Visit(PrinterTableName, data, out id);
                 data = this.ConvertClientPrinterInfoToJson(changedHardwareList);
-                visitor.Visit(ClientPrinterTableName, data);
+                int temp;
+                visitor.Visit(ClientPrinterTableName, data, out temp);
             }
         }
 
@@ -150,7 +154,7 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from printerInfo in printerInfoList
                         select
@@ -162,7 +166,7 @@
                             new JProperty("server_name", printerInfo.ServerName),
                             new JProperty("vertical_resolution", printerInfo.VerticalResolution),
                             new JProperty("horizontal_resolution", printerInfo.HorizontalResolution),
-                            new JProperty("is_hidden", GenericExtensions.GetBooleanValue((bool)printerInfo.Hidden))))));
+                            new JProperty("is_hidden", GenericExtensions.GetBooleanValue(printerInfo.Hidden))))));
             return data.ToString();
         }
 
@@ -179,22 +183,18 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from printerInfo in printerInfoList
                         select
                             new JObject(
                             new JProperty("port", printerInfo.PortName),
                             new JProperty("status_id", printerInfo.Status),
-                            new JProperty(
-                            "is_shared",
-                            GenericExtensions.GetBooleanValue((bool)printerInfo.Shared)),
-                            new JProperty(
-                            "is_default",
-                            GenericExtensions.GetBooleanValue((bool)printerInfo.Default),
-                            new JProperty(
-                            "work_offline",
-                            GenericExtensions.GetBooleanValue((bool)printerInfo.WorkOffline)))))));
+                            new JProperty("is_shared", GenericExtensions.GetBooleanValue((bool)printerInfo.Shared)),
+                            new JProperty("is_default", GenericExtensions.GetBooleanValue((bool)printerInfo.Default)),
+                            new JProperty("work_offline", GenericExtensions.GetBooleanValue((bool)printerInfo.WorkOffline)),
+                            new JProperty("client_id", ClientId.Id),
+                            new JProperty("printer_id", this.id)))));
             return data.ToString();
         }
     }

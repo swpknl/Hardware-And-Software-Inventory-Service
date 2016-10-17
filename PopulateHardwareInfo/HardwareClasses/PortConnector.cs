@@ -1,4 +1,4 @@
-﻿namespace PopulateWMIInfo.Rules
+﻿namespace PopulateWMIInfo.HardwareClasses
 {
     using System;
     using System.Collections.Generic;
@@ -29,6 +29,8 @@
         private ManagementObjectSearcher searcher;
 
         private List<PortConnectorInfo> portConnectorInfoList;
+
+        private int id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PortConnector"/> class.
@@ -62,9 +64,10 @@
         public void ReportWMIInfo(IVisitor visitor)
         {
             var data = this.ConvertPortConnectorInfoToJson(this.portConnectorInfoList);
-            visitor.Visit(PortConnectorTableName, data);
+            visitor.Visit(PortConnectorTableName, data, out this.id);
             data = this.ConvertClientPortConnectorInfoToJson(this.portConnectorInfoList);
-            visitor.Visit(ClientPortConnectorTableName, data);
+            int temp;
+            visitor.Visit(ClientPortConnectorTableName, data, out temp);
         }
 
         /// <summary>
@@ -81,9 +84,10 @@
             if (changedHardwareList.Any())
             {
                 var data = this.ConvertPortConnectorInfoToJson(changedHardwareList);
-                visitor.Visit(PortConnectorTableName, data);
+                visitor.Visit(PortConnectorTableName, data, out this.id);
                 data = this.ConvertClientPortConnectorInfoToJson(changedHardwareList);
-                visitor.Visit(ClientPortConnectorTableName, data);
+                int temp;
+                visitor.Visit(ClientPortConnectorTableName, data, out temp);
             }
         }
 
@@ -130,7 +134,7 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from portConnectorInfo in portConnectorInfoList
                         select
@@ -153,12 +157,14 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from portConnectorInfo in portConnectorInfoList
                         select
                             new JObject(
-                            new JProperty("external_reference", portConnectorInfo.ExternalReferenceDesignator)))));
+                            new JProperty("external_reference", portConnectorInfo.ExternalReferenceDesignator),
+                            new JProperty("client_id", ClientId.Id),
+                            new JProperty("port_id", this.id)))));
             return data.ToString();
         }
     }

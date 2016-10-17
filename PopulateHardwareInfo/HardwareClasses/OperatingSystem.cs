@@ -1,4 +1,4 @@
-﻿namespace PopulateWMIInfo.Rules
+﻿namespace PopulateWMIInfo.HardwareClasses
 {
     using System;
     using System.Collections.Generic;
@@ -31,6 +31,8 @@
 
         private string oa3XOriginalProductKey;
 
+        private int id;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="OperatingSystem"/> class.
         /// </summary>
@@ -40,7 +42,7 @@
             this.seacher = new ManagementObjectSearcher(
                 WmiConstants.WmiRootNamespace,
                 string.Format(
-                    "SELECT {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11} FROM Win32_OperatingSystem",
+                    "SELECT {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12} FROM Win32_OperatingSystem",
                     WmiConstants.OSType,
                     WmiConstants.Caption,
                     WmiConstants.Manufacturer,
@@ -52,7 +54,8 @@
                     WmiConstants.Locale,
                     WmiConstants.CountryCode,
                     WmiConstants.Organization,
-                    WmiConstants.SystemDirectory));
+                    WmiConstants.SystemDirectory,
+                    WmiConstants.OSLanguage));
             this.softwareLicensingServiceSearcher = new ManagementObjectSearcher(
                 WmiConstants.WmiMS409Namespace,
                 "SELECT * FROM SoftwareLicensingService");
@@ -76,11 +79,12 @@
         public void ReportWMIInfo(IVisitor visitor)
         {
             var data = this.ConvertOperatingSystemInfoToJson(this.operatingSystemInfoList);
-            visitor.Visit(OperatingSystemTableName, data);
+            visitor.Visit(OperatingSystemTableName, data, out id);
             data = this.ConvertClientOperatingSystemInfoToJson(
                 this.operatingSystemInfoList,
                 this.oa3XOriginalProductKey);
-            visitor.Visit(OperatingSystemClientTableName, data);
+            int temp;
+            visitor.Visit(OperatingSystemClientTableName, data, out temp);
         }
 
         /// <summary>
@@ -100,28 +104,29 @@
                 System.StringComparison.OrdinalIgnoreCase)
                                            ? string.Empty
                                            : tempValue;
+            int temp;
             if (changedHardwareList.Any() && changedHardwareValue != string.Empty)
             {
                 var data = this.ConvertOperatingSystemInfoToJson(changedHardwareList);
-                visitor.Visit(OperatingSystemTableName, data);
+                visitor.Visit(OperatingSystemTableName, data, out id);
                 data = this.ConvertClientOperatingSystemInfoToJson(changedHardwareList, changedHardwareValue);
-                visitor.Visit(OperatingSystemClientTableName, data);
+                visitor.Visit(OperatingSystemClientTableName, data, out temp);
             }
             else if (changedHardwareList.Any() && changedHardwareValue == string.Empty)
             {
                 var data = this.ConvertOperatingSystemInfoToJson(changedHardwareList);
-                visitor.Visit(OperatingSystemTableName, data);
+                visitor.Visit(OperatingSystemTableName, data, out id);
                 data = this.ConvertClientOperatingSystemInfoToJson(changedHardwareList, string.Empty);
-                visitor.Visit(OperatingSystemClientTableName, data);
+                visitor.Visit(OperatingSystemClientTableName, data, out temp);
             }
             else if (changedHardwareList.Any() == false && changedHardwareValue != string.Empty)
             {
                 var data = this.ConvertOperatingSystemInfoToJson(new List<OperatingSystemInfo>());
-                visitor.Visit(OperatingSystemTableName, data);
+                visitor.Visit(OperatingSystemTableName, data, out id);
                 data = this.ConvertClientOperatingSystemInfoToJson(
                     new List<OperatingSystemInfo>(),
                     changedHardwareValue);
-                visitor.Visit(OperatingSystemClientTableName, data);
+                visitor.Visit(OperatingSystemClientTableName, data, out temp);
             }
         }
 
@@ -147,11 +152,10 @@
                         CSDVersion = queryObject[WmiConstants.CSDVersion],
                         SerialNumber = queryObject[WmiConstants.SerialNumber],
                         OSArchitecture = queryObject[WmiConstants.OSArchitecture],
-                        OperatingSystemSKU =
-                                                          queryObject[WmiConstants.OperatingSystemSKU],
+                        OperatingSystemSKU = queryObject[WmiConstants.OperatingSystemSKU],
                         Locale = queryObject[WmiConstants.Locale],
                         CountryCode = queryObject[WmiConstants.CountryCode],
-                        OSLanguage = queryObject[WmiConstants.Organization],
+                        OSLanguage = queryObject[WmiConstants.OSLanguage],
                         SystemDirectory = queryObject[WmiConstants.SystemDirectory],
                         Organization = queryObject[WmiConstants.Organization]
                     };
@@ -197,12 +201,12 @@
             var data =
                 new JObject(
                     new JProperty(
-                        "resources",
+                        "resource",
                         new JArray(
                             from operatingSystemInfo in operatingSystemInfoList
                             select
                                 new JObject(
-                                new JProperty("os_type_id", operatingSystemInfo.OSType),
+                                //new JProperty("os_type_id", operatingSystemInfo.OSType),
                                 new JProperty("manufacturer_id", operatingSystemInfo.Manufacturer),
                                 new JProperty("version", operatingSystemInfo.Version),
                                 new JProperty("version_info_id", operatingSystemInfo.CSDVersion),
@@ -229,7 +233,7 @@
             var data =
                 new JObject(
                     new JProperty(
-                        "resources",
+                        "resource",
                         new JArray(
                             from operatingSystemInfo in operatingSystemInfoList
                             select
@@ -239,7 +243,9 @@
                                 new JProperty("system_ui_language", operatingSystemInfo.OSLanguage),
                                 new JProperty("company_id", operatingSystemInfo.Organization),
                                 new JProperty("system_directory_id", operatingSystemInfo.SystemDirectory),
-                                new JProperty("cd_key", oa3xOriginalProductKey)))));
+                                new JProperty("cd_key", oa3xOriginalProductKey),
+                                new JProperty("client_id", ClientId.Id),
+                                new JProperty("os_id", this.id)))));
             return data.ToString();
         }
     }

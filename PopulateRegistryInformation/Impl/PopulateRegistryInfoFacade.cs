@@ -14,12 +14,12 @@
     /// </summary>
     public class PopulateRegistryInfoFacade : IPopulateRegistryInfoFacade
     {
-        private List<IPopulateRegistryInfo> registryKeysList;
+        private readonly List<IPopulateRegistryInfo> registryKeysList;
 
-        private ILogger logger;
+        private readonly IVisitor visitor;
 
-        private IVisitor visitor;
-
+        private readonly ILogger logger;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="PopulateRegistryInfoFacade"/> class.
         /// </summary>

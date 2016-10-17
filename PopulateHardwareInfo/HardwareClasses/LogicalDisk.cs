@@ -1,4 +1,4 @@
-﻿namespace PopulateWMIInfo.Rules
+﻿namespace PopulateWMIInfo.HardwareClasses
 {
     using System;
     using System.Collections.Generic;
@@ -26,6 +26,8 @@
         private ManagementObjectSearcher searcher;
 
         private List<LogicalDrivesInfo> logicalDrivesInfoList;
+
+        private int id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogicalDisk"/> class.
@@ -67,9 +69,10 @@
         public void ReportWMIInfo(IVisitor visitor)
         {
             var data = this.ConvertLogicalDrivesInfoToJson(this.logicalDrivesInfoList);
-            visitor.Visit(LogicalDrivesInfoTableName, data);
+            visitor.Visit(LogicalDrivesInfoTableName, data, out id);
             data = this.ConvertClientLogicalDrivesInfoToJson(this.logicalDrivesInfoList);
-            visitor.Visit(LogicalDrivesInfoClientTableName, data);
+            int temp;
+            visitor.Visit(LogicalDrivesInfoClientTableName, data, out temp);
         }
 
         /// <summary>
@@ -86,9 +89,10 @@
             if (changedHardwareList.Any())
             {
                 var data = this.ConvertLogicalDrivesInfoToJson(changedHardwareList);
-                visitor.Visit(LogicalDrivesInfoTableName, data);
+                visitor.Visit(LogicalDrivesInfoTableName, data, out id);
                 data = this.ConvertClientLogicalDrivesInfoToJson(changedHardwareList);
-                visitor.Visit(LogicalDrivesInfoClientTableName, data);
+                int temp;
+                visitor.Visit(LogicalDrivesInfoClientTableName, data, out temp);
             }
         }
 
@@ -146,7 +150,7 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from logicalDrivesInfo in logicalDrivesInfoList
                         select
@@ -155,8 +159,8 @@
                             new JProperty("file_system", logicalDrivesInfo.FileSystem),
                             new JProperty("total_size", logicalDrivesInfo.Size),
                             new JProperty("provider_name", logicalDrivesInfo.ProviderName),
-                            new JProperty("supports_file_compression", GenericExtensions.GetBooleanValue((bool)logicalDrivesInfo.SupportsFileCompression)),
-                            new JProperty("support_disk_quotas", GenericExtensions.GetBooleanValue((bool)logicalDrivesInfo.SupportsDiskQuotas))))));
+                            new JProperty("supports_file_compression", GenericExtensions.GetBooleanValue(logicalDrivesInfo.SupportsFileCompression)),
+                            new JProperty("support_disk_quotas", GenericExtensions.GetBooleanValue(logicalDrivesInfo.SupportsDiskQuotas))))));
             return data.ToString();
         }
 
@@ -173,7 +177,7 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from logicalDrivesInfo in logicalDrivesInfoList
                         select
@@ -181,9 +185,11 @@
                             new JProperty("free_space", logicalDrivesInfo.FreeSpace),
                             new JProperty(
                             "is_compressed",
-                            GenericExtensions.GetBooleanValue((bool)logicalDrivesInfo.Compressed)),
+                            GenericExtensions.GetBooleanValue(logicalDrivesInfo.Compressed)),
                             new JProperty("volume_serial_number", logicalDrivesInfo.VolumeSerialNumber),
-                            new JProperty("volume_name", logicalDrivesInfo.VolumeName)))));
+                            new JProperty("volume_name", logicalDrivesInfo.VolumeName),
+                            new JProperty("client_id", ClientId.Id),
+                            new JProperty("logical_disk_id", this.id)))));
             return data.ToString();
         }
     }

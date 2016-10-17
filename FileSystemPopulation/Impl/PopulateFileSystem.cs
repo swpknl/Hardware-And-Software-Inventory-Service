@@ -99,7 +99,8 @@
         public void ReportFilesInfo(IVisitor visitor)
         {
             var data = this.ConvertFilesInfoToJson();
-            visitor.Visit(SoftwareTableName, data);
+            int id;
+            visitor.Visit(SoftwareTableName, data, out id);
         }
 
         /// <summary>
@@ -113,7 +114,7 @@
             var data =
                 new JObject(
                     new JProperty(
-                        "resources",
+                        "resource",
                         new JArray(
                             from fileSystemInfo in this.fileSystemInformationList
                             select
@@ -127,8 +128,8 @@
                                 new JProperty("executable_file", fileSystemInfo.FileName),
                                 new JProperty("trademark", fileSystemInfo.TradeMark),
                                 new JProperty("executable_extention", fileSystemInfo.Extension),
-                                new JProperty("size", fileSystemInfo.FileSize),
-                                new JProperty("os_type", 1),
+                                new JProperty("size", fileSystemInfo.FileSize == string.Empty ? "0" : fileSystemInfo.FileSize),
+                                new JProperty("os_type", 1), // Windows has ID 1
                                 new JProperty("is_registry", "FALSE")))));
             return data.ToString();
         }

@@ -14,6 +14,6 @@
         /// <param name="data">
         /// The data.
         /// </param>
-        void Visit(string tableName, string data);
+        void Visit(string tableName, string data, out int id);
     }
 }

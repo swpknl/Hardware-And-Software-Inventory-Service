@@ -1,4 +1,4 @@
-﻿namespace PopulateWMIInfo.Rules
+﻿namespace PopulateWMIInfo.HardwareClasses
 {
     using System;
     using System.Collections.Generic;
@@ -27,6 +27,8 @@
         private const string ClientBaseBoardTableName = "x_client_base_board";
 
         private ManagementObjectSearcher searcher;
+
+        private int id;
 
         private List<BaseboardInfo> baseboardInfoList;
 
@@ -68,9 +70,10 @@
         public void ReportWMIInfo(IVisitor visitor)
         {
             var data = this.ConvertBaseBoardInfoToJson(this.baseboardInfoList);
-            visitor.Visit(BaseBoardTableName, data);
+            visitor.Visit(BaseBoardTableName, data, out id);
             data = this.ConvertClientBaseBoardInfoToJson(this.baseboardInfoList);
-            visitor.Visit(ClientBaseBoardTableName, data);
+            int temp;
+            visitor.Visit(ClientBaseBoardTableName, data, out temp);
         }
 
         /// <summary>
@@ -87,9 +90,10 @@
             if (changedBaseboardInfoList.Any())
             {
                 var data = this.ConvertBaseBoardInfoToJson(changedBaseboardInfoList);
-                visitor.Visit(BaseBoardTableName, data);
+                visitor.Visit(BaseBoardTableName, data, out id);
+                int temp;
                 data = this.ConvertClientBaseBoardInfoToJson(changedBaseboardInfoList);
-                visitor.Visit(ClientBaseBoardTableName, data);
+                visitor.Visit(ClientBaseBoardTableName, data, out temp);
             }
             
         }
@@ -152,19 +156,19 @@
                             new JProperty("manufacturer", baseboardInfo.Manufacturer),
                             new JProperty(
                             "is_hot_swappable",
-                            GenericExtensions.GetBooleanValue((bool)baseboardInfo.HotSwappable)),
+                            GenericExtensions.GetBooleanValue(baseboardInfo.HotSwappable)),
                             new JProperty(
                             "is_hosting_board",
-                            GenericExtensions.GetBooleanValue((bool)baseboardInfo.HostingBoard)),
+                            GenericExtensions.GetBooleanValue(baseboardInfo.HostingBoard)),
                             new JProperty(
                             "is_removable",
-                            GenericExtensions.GetBooleanValue((bool)baseboardInfo.Removable)),
+                            GenericExtensions.GetBooleanValue(baseboardInfo.Removable)),
                             new JProperty(
                             "is_replaceable",
-                            GenericExtensions.GetBooleanValue((bool)baseboardInfo.Replaceable)),
+                            GenericExtensions.GetBooleanValue(baseboardInfo.Replaceable)),
                             new JProperty(
                             "requires_daugter_board",
-                            GenericExtensions.GetBooleanValue((bool)baseboardInfo.RequiresDaughterBoard)),
+                            GenericExtensions.GetBooleanValue(baseboardInfo.RequiresDaughterBoard)),
                             new JProperty("total_cpu_sockets", baseboardInfo.TotalCpuSockets)))));
             return data.ToString();
         }
@@ -185,7 +189,9 @@
                         select
                             new JObject(
                             new JProperty("version", baseboardInfo.Version),
-                            new JProperty("serial_number", baseboardInfo.SerialNumber)))));
+                            new JProperty("serial_number", baseboardInfo.SerialNumber),
+                            new JProperty("client_id", ClientId.Id),
+                            new JProperty("base_board_id", this.id)))));
             return data.ToString();
         }
     }

@@ -1,4 +1,4 @@
-﻿namespace PopulateWMIInfo.Rules
+﻿namespace PopulateWMIInfo.HardwareClasses
 {
     using System;
     using System.Collections.Generic;
@@ -26,7 +26,9 @@
 
         private const string BiosClientTableName = "x_client_bios";
 
-        private ManagementObjectSearcher searcher;
+        private readonly ManagementObjectSearcher searcher;
+
+        private int id;
 
         private List<BIOSInfo> biosInfoList;
 
@@ -58,9 +60,10 @@
         public void ReportWMIInfo(IVisitor visitor)
         {
             var data = this.ConvertBiosInfoToJson(this.biosInfoList);
-            visitor.Visit(BiosTableName, data);
+            visitor.Visit(BiosTableName, data, out id);
             data = this.ConvertClientBiosInfoToJson(this.biosInfoList);
-            visitor.Visit(BiosClientTableName, data);
+            int temp;
+            visitor.Visit(BiosClientTableName, data, out temp);
         }
 
         /// <summary>
@@ -78,9 +81,10 @@
             if (changedBiosInfoList.Any())
             {
                 var data = this.ConvertBiosInfoToJson(changedBiosInfoList);
-                visitor.Visit(BiosTableName, data);
+                visitor.Visit(BiosTableName, data, out id);
                 data = this.ConvertClientBiosInfoToJson(changedBiosInfoList);
-                visitor.Visit(BiosClientTableName, data);
+                int temp;
+                visitor.Visit(BiosClientTableName, data, out temp);
             }
         }
 
@@ -97,6 +101,7 @@
             // TODO: SystemBIOSMajorVersion and SystemBiosMinorVersion are not present before Windows 10
             try
             {
+                DateTime temp;
                 foreach (var queryObj in this.searcher.Get())
                 {
                     var biosInfo = new BIOSInfo
@@ -106,9 +111,16 @@
                         SMBIOSBIOSVersion = queryObj[WmiConstants.SMBIOSBIOSVersion],
                         SMBIOSMajorVersion = queryObj[WmiConstants.SMBIOSMajorVersion],
                         SMBIOSMinorVersion = queryObj[WmiConstants.SMBIOSMinorVersion],
-                        ReleaseDate = queryObj[WmiConstants.ReleaseDate],
                         SerialNumber = queryObj[WmiConstants.SerialNumber]
                     };
+                    if (DateTime.TryParse(queryObj[WmiConstants.ReleaseDate].ToString(), out temp))
+                    {
+                        biosInfo.ReleaseDate = temp.ToLocalTime();
+                    }
+                    else
+                    {
+                        biosInfo.ReleaseDate = null;
+                    }
 
                     tempList.Add(biosInfo);
                 }
@@ -166,7 +178,10 @@
                         "resource",
                         new JArray(
                             from biosInfo in biosInfoList
-                            select new JObject(new JProperty("serial_number", biosInfo.SerialNumber)))));
+                            select new JObject(
+                                new JProperty("serial_number", biosInfo.SerialNumber),
+                                new JProperty("client_id", ClientId.Id),
+                                new JProperty("bios_id", this.id)))));
             return data.ToString();
         }
     }

@@ -1,4 +1,4 @@
-﻿namespace PopulateWMIInfo.Rules
+﻿namespace PopulateWMIInfo.HardwareClasses
 {
     using System;
     using System.Collections.Generic;
@@ -37,6 +37,22 @@
         private List<ComputerSystemInfo> computerSystemInfoList;
 
         private List<ComputerSystemProductInfo> computerSystemProductInfoList;
+
+        private Dictionary<string, int> ComputerSystemStatus = new Dictionary<string, int>
+                                                                   {
+                                                                       { "OK", 1 },
+                                                                       { "Error", 2 },
+                                                                       { "Degraded", 3 },
+                                                                       { "Unknown", 4 },
+                                                                       { "Pred Fail", 5 },
+                                                                       { "Starting", 6 },
+                                                                       { "Stopping", 7 },
+                                                                       { "Service", 8 },
+                                                                       { "Stressed", 9 },
+                                                                       { "NonRecover", 10 },
+                                                                       { "No Contact", 11 },
+                                                                       { "Lost Comm", 12 }
+                                                                   };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ComputerSystem"/> class.
@@ -95,7 +111,9 @@
         public void ReportWMIInfo(IVisitor visitor)
         {
             var data = this.ConvertComputerSystemToJson(this.computerSystemInfoList, this.computerSystemProductInfoList);
-            visitor.Visit(ComputerSystemTableName, data);
+            int id;
+            visitor.Visit(ComputerSystemTableName, data, out id);
+            ClientId.Id = id;
         }
 
         /// <summary>
@@ -124,14 +142,14 @@
                                 new JProperty("status_id", computerSystemInfo.Status),
                                 new JProperty(
                                 "is_virtual",
-                                GenericExtensions.GetBooleanValue((bool)computerSystemInfo.IsVirtual)),
+                                GenericExtensions.GetBooleanValue(computerSystemInfo.IsVirtual)),
                                 new JProperty("hypervisor_name", computerSystemInfo.Hypervisor),
                                 new JProperty(
                                 "is_server",
-                                GenericExtensions.GetBooleanValue((bool)computerSystemInfo.IsServer)),
+                                GenericExtensions.GetBooleanValue(computerSystemInfo.IsServer)),
                                 new JProperty(
                                 "is_portable",
-                                GenericExtensions.GetBooleanValue((bool)computerSystemInfo.IsPortable)),
+                                GenericExtensions.GetBooleanValue(computerSystemInfo.IsPortable)),
                                 new JProperty("computer_id", computerSystemInfo.ComputerId),
                                 new JProperty("owner_name", computerSystemInfo.PrimaryOwnerName),
                                 new JProperty("sku", computerSystemInfo.SystemSKUNumber),
@@ -139,9 +157,9 @@
                                 new JProperty("thermal_state", computerSystemInfo.ThermalState),
                                 new JProperty(
                                 "is_part_of_domain",
-                                GenericExtensions.GetBooleanValue((bool)computerSystemInfo.PartOfDomain)),
-                                new JProperty("domain_id", computerSystemInfo.Domain),
-                                new JProperty("workgroup_id", computerSystemInfo.Workgroup),
+                                GenericExtensions.GetBooleanValue(computerSystemInfo.PartOfDomain)),
+                                // new JProperty("domain_id", computerSystemInfo.Domain), // Domain ID is string and cannot be converted to int
+                                // new JProperty("workgroup_id", computerSystemInfo.Workgroup), // Workgroup ID is string and cannot be parsed to int
                                 new JProperty("time_zone_id", computerSystemInfo.CurrentTimeZone),
                                 new JProperty("manufacturer", computerSystemInfo.Manufacturer),
                                 new JProperty("computer_model", computerSystemInfo.Model),
@@ -168,24 +186,25 @@
             var tempComputerSystemProductList = this.GetComputerSystemProductValue();
             changedComputerSystemProductList =
                 tempComputerSystemProductList.GetDifference(this.computerSystemProductInfoList);
+            int temp;
             if (changedComputerSystemList.Any() && changedComputerSystemProductList.Any())
             {
                 var data = this.ConvertComputerSystemToJson(changedComputerSystemList, changedComputerSystemProductList);
-                visitor.Visit(ComputerSystemTableName, data);
+                visitor.Visit(ComputerSystemTableName, data, out temp);
             }
             else if (changedComputerSystemList.Any() && !changedComputerSystemProductList.Any())
             {
                 var data = this.ConvertComputerSystemToJson(
                     changedComputerSystemList,
                     new List<ComputerSystemProductInfo>());
-                visitor.Visit(ComputerSystemTableName, data);
+                visitor.Visit(ComputerSystemTableName, data, out temp);
             }
             else if (!changedComputerSystemList.Any() && changedComputerSystemProductList.Any())
             {
                 var data = this.ConvertComputerSystemToJson(
                     new List<ComputerSystemInfo>(),
                     changedComputerSystemProductList);
-                visitor.Visit(ComputerSystemTableName, data);
+                visitor.Visit(ComputerSystemTableName, data, out temp);
             }
         }
 
@@ -300,7 +319,7 @@
                     var computerSystemInfo = new ComputerSystemInfo
                     {
                         Name = queryObject[WmiConstants.Name],
-                        Status = queryObject[WmiConstants.Status],
+                        Status = this.ComputerSystemStatus[queryObject[WmiConstants.Status].ToString()],
                         PrimaryOwnerName = queryObject[WmiConstants.PrimaryOwnerName],
                         SystemType = queryObject[WmiConstants.SystemType],
                         ThermalState = queryObject[WmiConstants.ThermalState],

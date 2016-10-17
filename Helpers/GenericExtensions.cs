@@ -56,9 +56,16 @@
         /// <returns>
         /// The <see cref="string"/>.
         /// </returns>
-        public static string GetBooleanValue(bool input)
+        public static string GetBooleanValue(object input)
         {
-            return input ? "TRUE" : "FALSE";
+            if (input == null)
+            {
+                return null;
+            }
+            else
+            {
+                return (bool)input ? "TRUE" : "FALSE";
+            }
         }
     }
 }

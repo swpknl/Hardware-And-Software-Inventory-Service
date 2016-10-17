@@ -56,7 +56,7 @@
             System.Diagnostics.Debugger.Launch();
             var builder = new ContainerBuilder();
             
-            builder.RegisterType<PopulateFileSystem>().As<IPopulateFileSystem>();
+            builder.RegisterType<PopulateFileSystem>().As<IPopulateFileSystem>().SingleInstance();
             builder.RegisterType<TraceLogger>().As<ILogger>().InstancePerDependency();
             builder.RegisterType<FilesSystemWatcher>().As<IFilesWatcher>();
             builder.RegisterType<RestApiVisitor>().As<IVisitor>().InstancePerDependency();
@@ -71,11 +71,11 @@
                 componentContext =>
                 new PopulateRegistryInfoFacade(
                     componentContext.Resolve<ILogger>(),
-                    componentContext.Resolve<IVisitor>())).As<IPopulateRegistryInfoFacade>();
+                    componentContext.Resolve<IVisitor>())).As<IPopulateRegistryInfoFacade>().SingleInstance();
             builder.Register(
                 componentContext =>
                 new RegistryMonitorFacade(componentContext.Resolve<ILogger>(), componentContext.Resolve<IVisitor>()))
-                .As<IRegistryMonitorFacade>();
+                .As<IRegistryMonitorFacade>().SingleInstance();
 
             Container = builder.Build();
         }

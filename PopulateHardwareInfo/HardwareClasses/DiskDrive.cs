@@ -1,4 +1,4 @@
-﻿namespace PopulateWMIInfo.Rules
+﻿namespace PopulateWMIInfo.HardwareClasses
 {
     using System;
     using System.Collections.Generic;
@@ -26,6 +26,8 @@
         private ManagementObjectSearcher searcher;
 
         private List<DiskdriveInfo> diskDriveInfoList;
+
+        private int id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DiskDrive"/> class.
@@ -64,9 +66,10 @@
         public void ReportWMIInfo(IVisitor visitor)
         {
             var data = this.ConvertDiskDriveInfoToJson(this.diskDriveInfoList);
-            visitor.Visit(DiskDriveTableName, data);
+            visitor.Visit(DiskDriveTableName, data, out this.id);
             data = this.ConvertClientDiskDriveInfoToJson(this.diskDriveInfoList);
-            visitor.Visit(DiskDriveClientTableName, data);
+            int temp;
+            visitor.Visit(DiskDriveClientTableName, data, out temp);
         }
 
         /// <summary>
@@ -81,9 +84,10 @@
             if (changedHardwareList.Any())
             {
                 var data = this.ConvertDiskDriveInfoToJson(changedHardwareList);
-                visitor.Visit(DiskDriveTableName, data);
+                visitor.Visit(DiskDriveTableName, data, out id);
                 data = this.ConvertClientDiskDriveInfoToJson(changedHardwareList);
-                visitor.Visit(DiskDriveClientTableName, data);
+                int temp;
+                visitor.Visit(DiskDriveClientTableName, data, out temp);
             }
         }
 
@@ -138,7 +142,7 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from diskDriveInfo in diskDriveInfoList
                         select
@@ -165,14 +169,16 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from diskDriveInfo in diskDriveInfoList
                         select
                             new JObject(
                             new JProperty("firmware_revision", diskDriveInfo.FirmwareRevisions),
                             new JProperty("partitions", diskDriveInfo.Partitions),
-                            new JProperty("serial_number", diskDriveInfo.SerialNumber)))));
+                            new JProperty("serial_number", diskDriveInfo.SerialNumber),
+                            new JProperty("client_id", ClientId.Id),
+                            new JProperty("disk_drive_id", this.id)))));
             return data.ToString();
         }
     }

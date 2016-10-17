@@ -99,9 +99,10 @@
                     FilePath = file.FullName,
                     Extension = file.Extension
                 };
+                int id;
                 fileSystemInfo.PopulateMetaData();
                 var data = this.ConvertFileSystemInfoToJson(fileSystemInfo);
-                this.visitor.Visit(SoftwareTableName, data);
+                this.visitor.Visit(SoftwareTableName, data, out id);
             }
         }
 
@@ -128,8 +129,9 @@
                     Extension = file.Extension
                 };
                 fileSystemInfo.PopulateMetaData();
+                int id;
                 var data = this.ConvertFileSystemInfoToJson(fileSystemInfo);
-                this.visitor.Visit(SoftwareTableName, data);
+                this.visitor.Visit(SoftwareTableName, data, out id);
             }
         }
 
@@ -147,7 +149,7 @@
             var data =
                 new JObject(
                     new JProperty(
-                        "resources",
+                        "resource",
                         new JArray(
                                 new JObject(
                                 new JProperty("executable_path", fileSystemInfo.FilePath),
@@ -159,7 +161,7 @@
                                 new JProperty("executable_file", fileSystemInfo.FileName),
                                 new JProperty("trademark", fileSystemInfo.TradeMark),
                                 new JProperty("executable_extention", fileSystemInfo.Extension),
-                                new JProperty("size", fileSystemInfo.FileSize),
+                                new JProperty("size", fileSystemInfo.FileSize == string.Empty ? "0" : fileSystemInfo.FileSize),
                                 new JProperty("os_type", 1),
                                 new JProperty("is_registry", "FALSE")))));
             return data.ToString();

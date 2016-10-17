@@ -1,4 +1,4 @@
-﻿namespace PopulateWMIInfo.Rules
+﻿namespace PopulateWMIInfo.HardwareClasses
 {
     using System;
     using System.Collections.Generic;
@@ -29,6 +29,8 @@
         private ManagementObjectSearcher searcher;
 
         private List<PartitionInfo> partitionInfoList;
+
+        private int id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Partition"/> class.
@@ -66,9 +68,10 @@
         public void ReportWMIInfo(IVisitor visitor)
         {
             var data = this.ConvertPartitionInfoToJson(this.partitionInfoList);
-            visitor.Visit(PartitionTableName, data);
+            visitor.Visit(PartitionTableName, data, out this.id);
             data = this.ConvertClientPartitionInfoToJson(this.partitionInfoList);
-            visitor.Visit(ClientPartitionTableName, data);
+            int temp;
+            visitor.Visit(ClientPartitionTableName, data, out temp);
         }
 
         /// <summary>
@@ -85,9 +88,10 @@
             if (changedHardwareList.Any())
             {
                 var data = this.ConvertClientPartitionInfoToJson(changedHardwareList);
-                visitor.Visit(PartitionTableName, data);
+                visitor.Visit(PartitionTableName, data, out this.id);
                 data = this.ConvertClientPartitionInfoToJson(changedHardwareList);
-                visitor.Visit(ClientPartitionTableName, data);
+                int temp;
+                visitor.Visit(ClientPartitionTableName, data, out temp);
             }
         }
 
@@ -138,7 +142,7 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from partitionInfo in partitionInfoList
                         select
@@ -148,10 +152,10 @@
                             new JProperty("disk_index", partitionInfo.DiskIndex),
                             new JProperty(
                             "is_bootable",
-                            GenericExtensions.GetBooleanValue((bool)partitionInfo.Bootable),
+                            GenericExtensions.GetBooleanValue(partitionInfo.Bootable)),
                             new JProperty(
                             "is_boot_partition",
-                            GenericExtensions.GetBooleanValue((bool)partitionInfo.BootPartition)))))));
+                            GenericExtensions.GetBooleanValue(partitionInfo.BootPartition))))));
             return data.ToString();
         }
 
@@ -168,13 +172,15 @@
         {
             var data = new JObject(
                 new JProperty(
-                    "resources",
+                    "resource",
                     new JArray(
                         from partitionInfo in partitionInfoList
                         select
                             new JObject(
                             new JProperty("size", partitionInfo.Size),
-                            new JProperty("starting_offset", partitionInfo.StartingOffset)))));
+                            new JProperty("starting_offset", partitionInfo.StartingOffset),
+                            new JProperty("client_id", ClientId.Id),
+                            new JProperty("partition_id", this.id)))));
             return data.ToString();
         }
     }

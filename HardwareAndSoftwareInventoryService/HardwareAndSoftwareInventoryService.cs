@@ -88,7 +88,7 @@
         {
             // TODO: Remove this when pushing in production
             System.Diagnostics.Debugger.Launch();
-            
+
             Task.Factory.StartNew(() => this.container.Resolve<IPopulateFileSystem>().PopulateFiles())
                 .ContinueWith((antecedent) => this.container.Resolve<IPopulateFileSystem>().ReportFilesInfo(this.container.Resolve<IVisitor>()))
                 .ContinueWith((antecedent) => this.container.Resolve<IFilesWatcher>().BeginMonitoringFiles());

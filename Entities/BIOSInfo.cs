@@ -1,5 +1,7 @@
 ﻿namespace Entities
 {
+    using System;
+
     /// <summary>
     /// The bios info.
     /// </summary>
@@ -19,7 +21,7 @@
 
         public object SMBIOSMinorVersion { get; set; }
 
-        public object ReleaseDate { get; set; }
+        public DateTime? ReleaseDate { get; set; }
 
         public object SerialNumber { get; set; }
 
