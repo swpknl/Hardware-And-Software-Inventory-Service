@@ -163,19 +163,74 @@
                     foreach (var subKeyName in key.GetSubKeyNames())
                     {
                         var tempRegistryKey = key.OpenSubKey(subKeyName);
-                        var registryInfo = new RegistryInfo
+                        var registryInfo = new RegistryInfo();
+                        var publisher = tempRegistryKey.GetValue(RegistryPropertiesConstants.Publisher, null);
+                        if (publisher != null)
                         {
-                            Publisher = tempRegistryKey.GetValue(RegistryPropertiesConstants.Publisher, null).ToString().RemoveSpecialCharacters(),
-                            DisplayName = tempRegistryKey.GetValue(RegistryPropertiesConstants.DisplayName, null).ToString().RemoveSpecialCharacters(),
-                            DisplayVersion = tempRegistryKey.GetValue(RegistryPropertiesConstants.DisplayVersion, null).ToString().RemoveSpecialCharacters(),
-                            InstallDate = tempRegistryKey.GetValue(RegistryPropertiesConstants.InstallDate, null).ToString().RemoveSpecialCharacters(),
-                            InstallLocation = tempRegistryKey.GetValue(RegistryPropertiesConstants.InstallLocation, null).ToString().RemoveSpecialCharacters(),
-                            DisplayIcon = tempRegistryKey.GetValue(RegistryPropertiesConstants.DisplayIcon, null).ToString().RemoveSpecialCharacters(),
-                            EstimatedSize = tempRegistryKey.GetValue(RegistryPropertiesConstants.EstimatedSize, null).ToString().RemoveSpecialCharacters(),
-                            URLInfoAbout = tempRegistryKey.GetValue(RegistryPropertiesConstants.URLInfoAbout, null).ToString().RemoveSpecialCharacters(),
-                            URLUpdateInfo = tempRegistryKey.GetValue(RegistryPropertiesConstants.URLUpdateInfo, null).ToString().RemoveSpecialCharacters(),
-                            HelpLink = tempRegistryKey.GetValue(RegistryPropertiesConstants.HelpLink, null).ToString().RemoveSpecialCharacters()
-                        };
+                            registryInfo.Publisher = publisher.ToString().RemoveSpecialCharacters();
+                        }
+
+                        var displayName = tempRegistryKey.GetValue(RegistryPropertiesConstants.DisplayName, null);
+                        if (displayName != null)
+                        {
+                            registryInfo.DisplayName = displayName.ToString().RemoveSpecialCharacters();
+                        }
+
+                        var displayVersion = tempRegistryKey.GetValue(RegistryPropertiesConstants.DisplayVersion, null);
+                        if (displayVersion != null)
+                        {
+                            registryInfo.DisplayVersion = displayVersion.ToString().RemoveSpecialCharacters();
+                        }
+
+                        var installDate = tempRegistryKey.GetValue(RegistryPropertiesConstants.InstallDate, null);
+                        if (installDate != null)
+                        {
+                            DateTime temp;
+                            if (DateTime.TryParse(installDate.ToString(), out temp))
+                            {
+                                registryInfo.InstallDate = temp.ToShortDateString();
+                            }
+                            else
+                            {
+                                registryInfo.InstallDate = null;
+                            }
+                        }
+
+                        var installLocation = tempRegistryKey.GetValue(RegistryPropertiesConstants.InstallLocation, null);
+                        if (installLocation != null)
+                        {
+                            registryInfo.InstallLocation = installLocation.ToString().RemoveSpecialCharacters();
+                        }
+
+                        var displayIcon = tempRegistryKey.GetValue(RegistryPropertiesConstants.DisplayIcon, null);
+                        if (displayIcon != null)
+                        {
+                            registryInfo.DisplayIcon = displayIcon.ToString().RemoveSpecialCharacters();
+                        }
+
+                        var estimatedSize = tempRegistryKey.GetValue(RegistryPropertiesConstants.EstimatedSize, null);
+                        if (estimatedSize != null)
+                        {
+                            registryInfo.EstimatedSize = estimatedSize.ToString().RemoveSpecialCharacters();
+                        }
+
+                        var urlInfoAbout = tempRegistryKey.GetValue(RegistryPropertiesConstants.URLInfoAbout, null);
+                        if (urlInfoAbout != null)
+                        {
+                            registryInfo.URLInfoAbout = urlInfoAbout.ToString().RemoveSpecialCharacters();
+                        }
+
+                        var urlUpdateInfo = tempRegistryKey.GetValue(RegistryPropertiesConstants.URLUpdateInfo, null);
+                        if (urlUpdateInfo != null)
+                        {
+                            registryInfo.URLUpdateInfo = urlUpdateInfo.ToString().RemoveSpecialCharacters();
+                        }
+
+                        var helpLink = tempRegistryKey.GetValue(RegistryPropertiesConstants.HelpLink, null);
+                        if (helpLink != null)
+                        {
+                            registryInfo.HelpLink = helpLink.ToString().RemoveSpecialCharacters();
+                        }
                         registryInfoList.Add(registryInfo);
                     }
                 }
