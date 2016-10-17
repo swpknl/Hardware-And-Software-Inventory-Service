@@ -41,8 +41,6 @@
         /// </summary>
         static HardwareAndSoftwareInventoryService()
         {
-            // TODO: Remove this when pushing in production
-            System.Diagnostics.Debugger.Launch();
             ConfigurationKeys.DbUserName = Helpers.ConfigurationManager.TryGetConfigurationValue(ConfigurationKeysConstants.DbUsername);
             ConfigurationKeys.DbPassword = Helpers.ConfigurationManager.TryGetConfigurationValue(ConfigurationKeysConstants.DbPassword);
             ConfigurationKeys.DirectoriesToExclude =
@@ -86,9 +84,6 @@
         /// </param>
         protected override void OnStart(string[] args)
         {
-            // TODO: Remove this when pushing in production
-            System.Diagnostics.Debugger.Launch();
-
             Task.Factory.StartNew(() => this.container.Resolve<IPopulateFileSystem>().PopulateFiles())
                 .ContinueWith((antecedent) => this.container.Resolve<IPopulateFileSystem>().ReportFilesInfo(this.container.Resolve<IVisitor>()))
                 .ContinueWith((antecedent) => this.container.Resolve<IFilesWatcher>().BeginMonitoringFiles());
