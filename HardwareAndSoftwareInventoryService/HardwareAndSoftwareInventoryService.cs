@@ -93,6 +93,7 @@
             ReportingTime.Time = Helpers.TimeSpanHelper.GetReportingTime(
                 ConfigurationKeys.BaseTime,
                 ConfigurationKeys.TimeSpan);
+
             this.reportingTimer.Elapsed += this.ReportingTimer_Elapsed;
             this.reportingTimer.Interval = 30000; // 30 seconds
             this.reportingTimer.Enabled = true;
